@@ -1,0 +1,169 @@
+<project name="drupal-ant-build-script" default="install" basedir=".">
+
+	<available file="${drupal.deploy.dir}" property="drupal.deploy.dir.exists" />
+	<fail unless="drupal.deploy.dir.exists">
+		Property drupal.deploy.dir must be set.
+		For developers: Set the property in Eclipse Window > Preferences > Ant > Runtime > Properties > Global properties 
+		The directory must exist!
+	</fail>
+	<property name="deploy.dir" value="${drupal.deploy.dir}/${ant.project.name}" />
+
+	<fail unless="site">
+		You have to set the site property. I e
+		&lt;property name="site" value="mydrupalsitename" /&gt;
+	</fail>
+
+	<fail unless="environment">
+		You have to set the environment property. I e
+		&lt;property name="environment" value="DEV" /&gt;
+	</fail>
+	<filter filtersfile="environment.${environment}.properties" />
+
+	<filter token="deploy.dir" value="${deploy.dir}" />
+
+	<target name="install" description="Install a fresh Drupal based on the make file into the deploy dir.">
+
+		<mkdir dir="${user.home}/.drush" />
+		<copy file="${site}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
+		<symlink action="delete" link="${deploy.dir}/sites/all/modules/custom" failonerror="false" />
+		<symlink action="delete" link="${deploy.dir}/sites/all/modules/media_edit_fields" failonerror="false" />
+		<symlink action="delete" link="${deploy.dir}/sites/all/themes/${site}" failonerror="false" />
+		<move file="${deploy.dir}/sites/default/files" tofile="/tmp/${site}_files" failonerror="false" />
+
+		<delete dir="${deploy.dir}" />
+
+		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
+			<arg line="make ${site}.make ${deploy.dir}" />
+		</exec>
+		<copy file="sites/default/settings.php" tofile="${deploy.dir}/sites/default/settings.php" filtering="true" overwrite="true" />
+		<chmod file="${deploy.dir}/sites/default/settings.php" perm="u+w" />
+
+
+		<symlink overwrite="true" failonerror="false" link="${deploy.dir}/sites/all/modules/custom" resource="${basedir}/sites/all/modules/custom" />
+		<symlink overwrite="true" failonerror="false" link="${deploy.dir}/sites/all/modules/media_edit_fields" resource="${basedir}/sites/all/modules/media_edit_fields" />
+		<symlink overwrite="true" failonerror="false" link="${deploy.dir}/sites/all/themes/${site}" resource="${basedir}/sites/all/themes/${site}" />
+		
+
+		<move file="/tmp/${site}_files" tofile="${deploy.dir}/sites/default/files" failonerror="false" />
+		<chmod perm="g+w" dir="${deploy.dir}/sites/default/files" />
+
+	</target>
+
+	<target name="revert-features" description="Runs drush update-database and reverts all features, overwrites settings.php and aliases">
+
+		<mkdir dir="${user.home}/.drush" />
+		<copy file="${site}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
+
+		<exec executable="drush" resolveexecutable="true" dir="${deploy.dir}" failonerror="true">
+			<arg line="--root=${deploy.dir} -y fra" />
+		</exec>
+
+		<exec executable="drush" resolveexecutable="true" dir="${deploy.dir}" failonerror="true">
+			<arg line="--root=${deploy.dir} -y updb" />
+		</exec>
+
+	</target>
+
+
+	<target name="deploy-all">
+
+		<mkdir dir="${user.home}/.drush" />
+		<copy file="${site}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
+
+		<delete dir="tmp/" failonerror="false"/>
+		<mkdir dir="tmp/" />
+
+		<exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
+			<arg line="make ${site}.make tmp/${site}" />
+		</exec>
+
+		<copy todir="tmp/${site}/sites" filtering="false" overwrite="true">
+					<fileset dir="sites">
+						<exclude name="**/*.inc" />
+						<exclude name="**/*.info" />
+						<exclude name="**/*.module" />
+						<exclude name="**/*.php" />
+					</fileset>
+		</copy>
+		<copy todir="tmp/${site}/sites" filtering="true" overwrite="true">
+			<fileset dir="sites">
+				<include name="**/*.inc" />
+				<include name="**/*.info" />
+				<include name="**/*.module" />
+				<include name="**/*.php" />
+			</fileset>
+		</copy>
+
+		<chmod perm="u+w">
+			<fileset dir="tmp/${site}">
+				<include name="**/settings.php" />
+			</fileset>
+		</chmod>
+
+		<!-- Rsync the project - remove old files -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${site}" failonerror="true">
+			<arg line="rsync ./ @${environment} --delete --exclude-files -y" />
+		</exec>
+
+		<!-- Run all pending updates -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${site}" failonerror="true">
+			<arg line="@${environment} updb -y" />
+		</exec>
+
+		<!-- Revert all features -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${site}" failonerror="true">
+			<arg line="@${environment} fra -y" />
+		</exec>
+
+		<delete dir="tmp" />
+
+	</target>
+
+	<target name="update-local-files" description="Update the local files dir.">
+
+		<!-- save the aliases file in the users home dir -->
+		<mkdir dir="${user.home}/.drush" />
+		<copy file="${site}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
+
+		<!-- sync the files dir -->
+		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
+			<arg line="rsync @${site}.PROD:sites/default/files/ ${deploy.dir}/sites/default/files/ -y -v" />
+		</exec>
+	</target>
+
+
+	<target name="update-local-db" description="Update the local database.">
+
+		<!-- save the aliases file in the users home dir -->
+		<mkdir dir="${user.home}/.drush" />
+		<copy file="${site}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
+
+
+		<!-- sync the database -->
+		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
+			<arg line="sql-sync @${site}.PROD @${site}.${environment} --no-ordered-dump -y -v" />
+		</exec>
+	</target>
+
+	
+	<target name="test-content-update" description="Update the local files dir.">
+
+		<!-- save the aliases file in the users home dir -->
+		<mkdir dir="${user.home}/.drush" />
+		<copy file="${site}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
+		
+		<!-- sync the files dir -->
+		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
+			<arg line="rsync @PROD:sites/default/files/ /srv/www/sites/default/files/ -y -v" />
+		</exec>
+
+		<!-- sync the database -->
+		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
+			<arg line="sql-sync @PROD @TEST -y -v --no-ordered-dump --no-cache" />
+		</exec>
+		
+	</target>
+
+
+
+</project>
