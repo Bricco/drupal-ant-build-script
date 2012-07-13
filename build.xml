@@ -79,13 +79,18 @@
 
 		<mkdir dir="tmp/" />
 
+		<copy todir="tmp/${ant.project.name}/scripts" filtering="false" overwrite="true">
+			<fileset dir="scripts">
+				<include name="*.sh"/>
+			</fileset>
+		</copy>
 		<copy todir="tmp/${ant.project.name}/sites" filtering="false" overwrite="true">
-					<fileset dir="sites">
-						<exclude name="**/*.inc" />
-						<exclude name="**/*.info" />
-						<exclude name="**/*.module" />
-						<exclude name="**/*.php" />
-					</fileset>
+			<fileset dir="sites">
+				<exclude name="**/*.inc" />
+				<exclude name="**/*.info" />
+				<exclude name="**/*.module" />
+				<exclude name="**/*.php" />
+			</fileset>
 		</copy>
 		<copy todir="tmp/${ant.project.name}/sites" filtering="true" overwrite="true">
 			<fileset dir="sites">
