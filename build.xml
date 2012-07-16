@@ -124,8 +124,9 @@
 
 	</target>
 
-	<target name="update-local-content" description="Update the local content with PROD data">
+	<target name="update-local-content" depends="update-local-database,update-local-files" description="Update the local content with PROD data" />
 
+	<target name="update-local-files" description="Update the local files from PROD">
 		<!-- save the aliases file in the users home dir -->
 		<mkdir dir="${user.home}/.drush" />
 		<copy file="${ant.project.name}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
@@ -134,7 +135,8 @@
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
 			<arg line="rsync @${ant.project.name}.PROD:sites/default/files/ ${deploy.dir}/sites/default/files/ -y -v" />
 		</exec>
-
+	</target>
+	<target name="update-local-database" description="Updates the local database from PROD">
 		<!-- save the aliases file in the users home dir -->
 		<mkdir dir="${user.home}/.drush" />
 		<copy file="${ant.project.name}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
