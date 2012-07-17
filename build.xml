@@ -116,6 +116,9 @@
 		</exec>
 
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}">
+			<arg line="@${environment} en features" />
+		</exec>
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}">
 			<arg line="@${environment} fra" />
 		</exec>
 
