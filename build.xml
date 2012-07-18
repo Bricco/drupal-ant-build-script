@@ -15,6 +15,13 @@
 	<filter filtersfile="environment.${environment}.properties" />
 	<filter token="deploy.dir" value="${deploy.dir}" />
 
+	<!-- this is called from Bamboo deploy jobs -->
+	<target name="deploy-all" depends="drush-setup,drush-make,copy-php,drush-runs,drush-cleanup" description="Full install of Drupal based on the make file"/>
+	
+	<!-- this is called from Bamboo automatic jobs -->
+	<target name="deploy-php" depends="drush-setup,copy-php,drush-runs,drush-cleanup" description="Copies PHP to the Drupal installation"/>
+	
+	
 	<target name="install" description="Install a fresh Drupal locally based on the make file into the deploy dir.">
 
 		<mkdir dir="${user.home}/.drush" />
@@ -41,47 +48,25 @@
 
 	</target>
 
-	<target name="deploy-all" description="Full install of Drupal based on the make file">
-
+	<target name="drush-setup" description="Sets up drush env">
+		
 		<mkdir dir="${user.home}/.drush" />
 		<copy file="${ant.project.name}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
 
 		<delete dir="tmp/" failonerror="false"/>
 		<mkdir dir="tmp/" />
 
+	</target>
+	
+	<target name="drush-make" description="Run drush make based on the make file">
+
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
 			<arg line="make ${ant.project.name}.make tmp/${ant.project.name}" />
 		</exec>
 		
-		<antcall target="deploy-php"/>
-		
-		<!-- Rsync the project - remove old files -->
-		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
-			<arg line="rsync ./ @${environment} --delete --exclude-files -y" />
-		</exec>
-
-		<!-- Run all pending updates -->
-		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
-			<arg line="@${environment} updb -y" />
-		</exec>
-
-		<!-- Enable features module -->
-		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
-			<arg line="@${environment} en features -y" />
-		</exec>
-		<!-- Revert all features -->
-		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
-			<arg line="@${environment} fra -y" />
-		</exec>
-
-		<delete dir="tmp" />
-
 	</target>
-
-	<target name="deploy-php" description="Copies PHP to the Drupal installation">
-
-
-		<mkdir dir="tmp/" />
+	
+	<target name="copy-php" description="Copies PHP to the Drupal installation in tmp folder">
 
 		<copy todir="tmp/${ant.project.name}/scripts" filtering="false" overwrite="true">
 			<fileset dir="scripts">
@@ -111,22 +96,37 @@
 			</fileset>
 		</chmod>
 
-		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}">
-			<arg line="rsync ./ @${environment} --exclude-files -y" />
+	</target>
+	<target name="drush-runs" description="Runs various drush commands">
+
+		<!-- Rsync the project - remove old files -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
+			<arg line="rsync ./ @${environment} --delete --exclude-files -y" />
 		</exec>
 
-		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}">
+		<!-- Run all pending updates -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
+			<arg line="@${environment} updb -y" />
+		</exec>
+
+		<!-- Enable features module -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
 			<arg line="@${environment} en features -y" />
 		</exec>
-		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}">
+		<!-- Revert all features -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
 			<arg line="@${environment} fra -y" />
 		</exec>
-
 
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}">
 			<arg line="@${environment} cc all" />
 		</exec>
 
+
+	</target>
+
+	<target name="drush-cleanup" description="Cleans up after deploy">
+		
 		<delete dir="tmp" />
 
 	</target>
