@@ -21,11 +21,7 @@
 	<!-- this is called from Bamboo automatic jobs -->
 	<target name="deploy-php" depends="drush-setup,copy-php,drush-runs,drush-cleanup" description="Copies PHP to the Drupal installation"/>
 	
-	
-	<target name="install" description="Install a fresh Drupal locally based on the make file into the deploy dir.">
-
-		<mkdir dir="${user.home}/.drush" />
-		<copy file="${ant.project.name}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
+	<target name="install" depends="drush-setup" description="Install a fresh Drupal locally based on the make file into the deploy dir.">
 		<symlink action="delete" link="${deploy.dir}/sites/all/modules/custom" failonerror="false" />
 		<symlink action="delete" link="${deploy.dir}/sites/all/themes/${ant.project.name}" failonerror="false" />
 		<move file="${deploy.dir}/sites/default/files" tofile="/tmp/${ant.project.name}_files" failonerror="false" />
@@ -45,29 +41,23 @@
 
 		<move file="/tmp/${ant.project.name}_files" tofile="${deploy.dir}/sites/default/files" failonerror="false" />
 		<chmod perm="g+w" dir="${deploy.dir}/sites/default/files" />
-
 	</target>
 
 	<target name="drush-setup" description="Sets up drush env">
-		
 		<mkdir dir="${user.home}/.drush" />
 		<copy file="${ant.project.name}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
 
 		<delete dir="tmp/" failonerror="false"/>
 		<mkdir dir="tmp/" />
-
 	</target>
 	
 	<target name="drush-make" description="Run drush make based on the make file">
-
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
 			<arg line="make ${ant.project.name}.make tmp/${ant.project.name}" />
 		</exec>
-		
 	</target>
 	
 	<target name="copy-php" description="Copies PHP to the Drupal installation in tmp folder">
-
 		<copy todir="tmp/${ant.project.name}/scripts" filtering="false" overwrite="true">
 			<fileset dir="scripts">
 				<include name="*.sh"/>
@@ -95,10 +85,9 @@
 				<include name="**/settings.php" />
 			</fileset>
 		</chmod>
-
 	</target>
-	<target name="drush-runs" description="Runs various drush commands">
 
+	<target name="drush-runs" description="Runs various drush commands">
 		<!-- Rsync the project - remove old files -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
 			<arg line="rsync ./ @${environment} --delete --exclude-files -y" />
@@ -121,46 +110,28 @@
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}">
 			<arg line="@${environment} cc all" />
 		</exec>
-
-
 	</target>
 
 	<target name="drush-cleanup" description="Cleans up after deploy">
-		
 		<delete dir="tmp" />
-
 	</target>
 
 	<target name="update-local-content" depends="update-local-database,update-local-files" description="Update the local content with PROD data" />
 
-	<target name="update-local-files" description="Update the local files from PROD">
-		<!-- save the aliases file in the users home dir -->
-		<mkdir dir="${user.home}/.drush" />
-		<copy file="${ant.project.name}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
-
+	<target name="update-local-files" depends="drush-setup" description="Update the local files from PROD">
 		<!-- sync the files dir -->
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
 			<arg line="rsync @${ant.project.name}.PROD:sites/default/files/ ${deploy.dir}/sites/default/files/ -y -v" />
 		</exec>
 	</target>
-	<target name="update-local-database" description="Updates the local database from PROD">
-		<!-- save the aliases file in the users home dir -->
-		<mkdir dir="${user.home}/.drush" />
-		<copy file="${ant.project.name}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
-
-
+	<target name="update-local-database" depends="drush-setup" description="Updates the local database from PROD">
 		<!-- sync the database -->
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
 			<arg line="sql-sync @${ant.project.name}.PROD @${ant.project.name}.${environment} --no-ordered-dump -y -v" />
 		</exec>
 	</target>
 	
-	<target name="test-content-update" description="Updates the TEST environment from the content from the PROD environment">
-
-		<!-- save the aliases file in the users home dir -->
-		<mkdir dir="${user.home}/.drush" />
-		<copy file="${ant.project.name}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
-		
+	<target name="test-content-update" depends="drush-setup" description="Updates the TEST environment from the content from the PROD environment">
 		<!-- sync the files dir -->
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
 			<arg line="rsync @PROD:sites/default/files/ /srv/www/sites/default/files/ -y -v" />
@@ -170,7 +141,6 @@
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
 			<arg line="sql-sync @PROD @TEST -y -v --no-ordered-dump --no-cache" />
 		</exec>
-		
 	</target>
 
 </project>
