@@ -16,7 +16,7 @@
 	<filter token="deploy.dir" value="${deploy.dir}" />
 
 	<!-- this is called from Bamboo deploy jobs -->
-	<target name="deploy-all" depends="drush-setup,drush-make,copy-php,drush-runs,drush-cleanup" description="Full install of Drupal based on the make file"/>
+	<target name="deploy-all" depends="drush-setup,drush-make,copy-php,drush-runs,drush-run-updb,drush-cleanup" description="Full install of Drupal based on the make file"/>
 	
 	<!-- this is called from Bamboo automatic jobs -->
 	<target name="deploy-php" depends="drush-setup,copy-php,drush-runs,drush-cleanup" description="Copies PHP to the Drupal installation"/>
@@ -93,11 +93,6 @@
 			<arg line="rsync ./ @${environment} --delete --exclude-files -y" />
 		</exec>
 
-		<!-- Run all pending updates -->
-		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
-			<arg line="@${environment} updb -y" />
-		</exec>
-
 		<!-- Enable features module -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
 			<arg line="@${environment} en features -y" />
@@ -109,6 +104,13 @@
 
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}">
 			<arg line="@${environment} cc all" />
+		</exec>
+	</target>
+
+	<target name="drush-run-updb" description="Runs various drush commands">
+		<!-- Run all pending updates -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
+			<arg line="@${environment} updb -y" />
 		</exec>
 	</target>
 
