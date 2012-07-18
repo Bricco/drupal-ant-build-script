@@ -93,10 +93,6 @@
 			<arg line="rsync ./ @${environment} --delete --exclude-files -y" />
 		</exec>
 
-		<!-- Enable features module -->
-		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
-			<arg line="@${environment} en features -y" />
-		</exec>
 		<!-- Revert all features -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
 			<arg line="@${environment} fra -y" />
