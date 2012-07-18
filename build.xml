@@ -67,7 +67,7 @@
 
 		<!-- Enable features module -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
-			<arg line="@${environment} en features" />
+			<arg line="@${environment} en features -y" />
 		</exec>
 		<!-- Revert all features -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
@@ -116,10 +116,10 @@
 		</exec>
 
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}">
-			<arg line="@${environment} en features" />
+			<arg line="@${environment} en features -y" />
 		</exec>
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}">
-			<arg line="@${environment} fra" />
+			<arg line="@${environment} fra -y" />
 		</exec>
 
 
