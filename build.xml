@@ -93,6 +93,15 @@
 			<arg line="rsync ./ @${environment} --delete --exclude-files -y" />
 		</exec>
 
+		<!-- Run all pending updates -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
+			<arg line="@${environment} updb -y" />
+		</exec>
+
+		<!-- Enable features module -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
+			<arg line="@${environment} en features -y" />
+		</exec>
 		<!-- Revert all features -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
 			<arg line="@${environment} fra -y" />
@@ -104,10 +113,6 @@
 	</target>
 
 	<target name="drush-run-updb" description="Runs various drush commands">
-		<!-- Run all pending updates -->
-		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
-			<arg line="@${environment} updb -y" />
-		</exec>
 	</target>
 
 	<target name="drush-cleanup" description="Cleans up after deploy">
