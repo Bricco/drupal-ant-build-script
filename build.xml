@@ -16,10 +16,10 @@
 	<filter token="deploy.dir" value="${deploy.dir}" />
 
 	<!-- this is called from Bamboo deploy jobs -->
-	<target name="deploy-all" depends="drush-setup,drush-make,copy-php,drush-runs,drush-run-updb,drush-cleanup" description="Full install of Drupal based on the make file"/>
+	<target name="deploy-all" depends="drush-setup,drush-make,copy-php,drush-runs,drush-run-cc,drush-cleanup" description="Full install of Drupal based on the make file"/>
 	
 	<!-- this is called from Bamboo automatic jobs -->
-	<target name="deploy-php" depends="drush-setup,copy-php,drush-runs,drush-cleanup" description="Copies PHP to the Drupal installation"/>
+	<target name="deploy-php" depends="drush-setup,copy-php,drush-run-cc,drush-cleanup" description="Copies PHP to the Drupal installation"/>
 	
 	<target name="install" depends="drush-setup" description="Install a fresh Drupal locally based on the make file into the deploy dir.">
 		<symlink action="delete" link="${deploy.dir}/sites/all/modules/custom" failonerror="false" />
@@ -90,7 +90,7 @@
 	<target name="drush-runs" description="Runs various drush commands">
 		<!-- Rsync the project - remove old files -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
-			<arg line="rsync ./ @${environment} --exclude-files -y" />
+			<arg line="rsync ./ @${environment} --delete --exclude-files -y" />
 		</exec>
 
 		<!-- Run all pending updates -->
@@ -107,12 +107,12 @@
 			<arg line="@${environment} fra -y" />
 		</exec>
 
+	</target>
+
+	<target name="drush-run-cc" description="Runs various drush commands">
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}">
 			<arg line="@${environment} cc all" />
 		</exec>
-	</target>
-
-	<target name="drush-run-updb" description="Runs various drush commands">
 	</target>
 
 	<target name="drush-cleanup" description="Cleans up after deploy">
