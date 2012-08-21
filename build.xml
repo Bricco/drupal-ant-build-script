@@ -90,7 +90,7 @@
 	<target name="drush-runs" description="Runs various drush commands">
 		<!-- Rsync the project - remove old files -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
-			<arg line="rsync ./ @${environment} --exclude-files -y" />
+			<arg line="rsync ./ @${environment} --exclude-files -y --delete" />
 		</exec>
 
 		<!-- Run all pending updates -->
