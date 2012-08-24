@@ -63,6 +63,11 @@
 				<include name="*.sh"/>
 			</fileset>
 		</copy>
+		<chmod perm="a+x">
+			<fileset dir="tmp/${ant.project.name}/scripts">
+				<include name="*.sh"/>
+			</fileset>
+		</chmod>
 		<copy todir="tmp/${ant.project.name}/sites" filtering="false" overwrite="true">
 			<fileset dir="sites">
 				<exclude name="**/*.inc" />
