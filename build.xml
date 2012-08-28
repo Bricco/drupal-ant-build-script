@@ -22,8 +22,10 @@
 	<target name="deploy-php" depends="drush-setup,copy-php,drush-run-cc,drush-cleanup" description="Copies PHP to the Drupal installation"/>
 	
 	<target name="install" depends="drush-setup" description="Install a fresh Drupal locally based on the make file into the deploy dir.">
+		
 		<symlink action="delete" link="${deploy.dir}/sites/all/modules/custom" failonerror="false" />
-		<symlink action="delete" link="${deploy.dir}/sites/all/themes/${ant.project.name}" failonerror="false" />
+		<symlink action="delete" link="${deploy.dir}/sites/all/themes/custom" failonerror="false" />
+		
 		<move file="${deploy.dir}/sites/default/files" tofile="/tmp/${ant.project.name}_files" failonerror="false" />
 
 		<delete dir="${deploy.dir}" />
@@ -149,6 +151,13 @@
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
 			<arg line="sql-sync @PROD @TEST -y -v --no-ordered-dump --no-cache" />
 		</exec>
+	</target>
+	
+	<target name="add-symlinks" description="Add symlinks to the costum modules and themes.">
+
+		<symlink overwrite="true" failonerror="false" link="${deploy.dir}/sites/all/modules/custom" resource="${basedir}/sites/all/modules/custom" />
+		<symlink overwrite="true" failonerror="false" link="${deploy.dir}/sites/all/themes/custom" resource="${basedir}/sites/all/themes/custom" />
+
 	</target>
 
 </project>
