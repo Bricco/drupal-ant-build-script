@@ -60,6 +60,7 @@
 	</target>
 	
 	<target name="copy-php" description="Copies PHP to the Drupal installation in tmp folder">
+		<mkdir dir="tmp/${ant.project.name}/scripts"/>
 		<copy todir="tmp/${ant.project.name}/scripts" filtering="true" overwrite="true">
 			<fileset dir="scripts">
 				<include name="*.sh"/>
