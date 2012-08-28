@@ -38,7 +38,7 @@
 
 
 		<symlink overwrite="true" failonerror="false" link="${deploy.dir}/sites/all/modules/custom" resource="${basedir}/sites/all/modules/custom" />
-		<symlink overwrite="true" failonerror="false" link="${deploy.dir}/sites/all/themes/custom" resource="${basedir}/sites/all/themes/${ant.project.name}" />
+		<symlink overwrite="true" failonerror="false" link="${deploy.dir}/sites/all/themes/custom" resource="${basedir}/sites/all/themes/custom" />
 		
 
 		<move file="/tmp/${ant.project.name}_files" tofile="${deploy.dir}/sites/default/files" failonerror="false" />
