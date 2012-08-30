@@ -16,10 +16,10 @@
 	<filter token="deploy.dir" value="${deploy.dir}" />
 
 	<!-- this is called from Bamboo deploy jobs -->
-	<target name="deploy-all" depends="drush-setup,drush-make,copy-php,drush-run-rsync,drush-runs,drush-run-cc,drush-cleanup" description="Full install of Drupal based on the make file"/>
+	<target name="deploy-all" depends="drush-setup,drush-make,copy-php,drush-run-rsync-with-delete,drush-runs,drush-run-cc,drush-cleanup" description="Full install of Drupal based on the make file"/>
 	
 	<!-- this is called from Bamboo automatic jobs -->
-	<target name="deploy-php" depends="drush-setup,copy-php,drush-run-rsync,drush-run-cc,drush-cleanup" description="Copies PHP to the Drupal installation"/>
+	<target name="deploy-php" depends="drush-setup,copy-php,drush-run-rsync-no-delete,drush-run-cc,drush-cleanup" description="Copies PHP to the Drupal installation"/>
 	
 	<target name="install" depends="drush-setup" description="Install a fresh Drupal locally based on the make file into the deploy dir.">
 		
@@ -113,7 +113,14 @@
 
 	</target>
 
-	<target name="drush-run-rsync" description="Runs drush cache clear">
+	<target name="drush-run-rsync-no-delete" description="Runs drush rsync without delete flag">
+		<!-- Rsync the project -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
+			<arg line="rsync ./ @${environment} --exclude-files -y" />
+		</exec>
+	</target>
+
+	<target name="drush-run-rsync-with-delete" description="Runs drush rsync with delete flag">
 		<!-- Rsync the project - remove old files -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
 			<arg line="rsync ./ @${environment} --exclude-files -y --delete" />
