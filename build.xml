@@ -28,6 +28,7 @@
 		
 		<move file="${deploy.dir}/sites/default/files" tofile="/tmp/${ant.project.name}_files" failonerror="false" />
 
+		<chmod file="${deploy.dir}/sites/default/settings.php" perm="u+w" />
 		<delete dir="${deploy.dir}" />
 
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
