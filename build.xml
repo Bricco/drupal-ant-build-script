@@ -12,6 +12,8 @@
 		You have to set the environment property. I e
 		&lt;property name="environment" value="DEV" /&gt;
 	</fail>
+
+	
 	<filter filtersfile="environment.${environment}.properties" />
 	<filter token="deploy.dir" value="${deploy.dir}" />
 
@@ -34,12 +36,17 @@
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
 			<arg line="make ${ant.project.name}.make ${deploy.dir}" />
 		</exec>
-		<copy file="sites/default/settings.php" tofile="${deploy.dir}/sites/default/settings.php" filtering="true" overwrite="true" />
-		<chmod file="${deploy.dir}/sites/default/settings.php" perm="u+w" />
+		
 
+		<copy todir="${deploy.dir}/sites/" filtering="TRUE">
+			<fileset dir="sites">
+				<exclude name="all/**"/>
+				<include name="**/settings.php"/>
+			</fileset>
+		</copy>
 
-		<symlink overwrite="true" failonerror="false" link="${deploy.dir}/sites/all/modules/custom" resource="${basedir}/sites/all/modules/custom" />
-		<symlink overwrite="true" failonerror="false" link="${deploy.dir}/sites/all/themes/custom" resource="${basedir}/sites/all/themes/custom" />
+		<symlink overwrite="true" failonerror="true" link="${deploy.dir}/sites/all/modules/custom" resource="${basedir}/sites/all/modules/custom" />
+		<symlink overwrite="true" failonerror="true" link="${deploy.dir}/sites/all/themes/custom" resource="${basedir}/sites/all/themes/custom" />
 		
 
 		<move file="/tmp/${ant.project.name}_files" tofile="${deploy.dir}/sites/default/files" failonerror="false" />
