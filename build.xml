@@ -40,13 +40,12 @@
 
 		<copy todir="${deploy.dir}/sites/" filtering="TRUE">
 			<fileset dir="sites">
-				<include name="**"/>
-				<exclude name="all"/>
+				<exclude name="all/**"/>			
 			</fileset>
 		</copy>
 
-		<symlink overwrite="true" failonerror="false" link="${deploy.dir}/sites/all/modules/custom" resource="${basedir}/sites/all/modules/custom" />
-		<symlink overwrite="true" failonerror="false" link="${deploy.dir}/sites/all/themes/custom" resource="${basedir}/sites/all/themes/custom" />
+		<symlink overwrite="true" failonerror="true" link="${deploy.dir}/sites/all/modules/custom" resource="${basedir}/sites/all/modules/custom" />
+		<symlink overwrite="true" failonerror="true" link="${deploy.dir}/sites/all/themes/custom" resource="${basedir}/sites/all/themes/custom" />
 		
 
 		<move file="/tmp/${ant.project.name}_files" tofile="${deploy.dir}/sites/default/files" failonerror="false" />
