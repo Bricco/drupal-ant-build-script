@@ -41,7 +41,7 @@
 		<copy todir="${deploy.dir}/sites/" filtering="TRUE">
 			<fileset dir="sites">
 				<exclude name="all/**"/>
-				<include name="**"/>
+				<include name="**/settings.php"/>
 			</fileset>
 		</copy>
 
