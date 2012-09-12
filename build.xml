@@ -40,7 +40,8 @@
 
 		<copy todir="${deploy.dir}/sites/" filtering="TRUE">
 			<fileset dir="sites">
-				<exclude name="all/**"/>			
+				<exclude name="all/**"/>
+				<include name="**"/>
 			</fileset>
 		</copy>
 
