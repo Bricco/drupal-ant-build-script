@@ -124,14 +124,14 @@
 	<target name="drush-run-rsync-no-delete" description="Runs drush rsync without delete flag">
 		<!-- Rsync the project -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
-			<arg line="rsync ./ @${environment} -y" />
+			<arg line="rsync ./ @${environment} -y -v" />
 		</exec>
 	</target>
 
 	<target name="drush-run-rsync-with-delete" description="Runs drush rsync with delete flag">
 		<!-- Rsync the project - remove old files -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
-			<arg line="--delete rsync ./ @${environment} -y" />
+			<arg line="rsync ./ @${environment} --delete -y -v" />
 		</exec>
 	</target>
 
