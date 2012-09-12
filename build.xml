@@ -38,7 +38,7 @@
 		</exec>
 		
 
-		<copy todir="${deploy.dir}/sites/">
+		<copy todir="${deploy.dir}/sites/" filtering="TRUE">
 			<fileset dir="sites">
 				<include name="**"/>
 				<exclude name="all"/>
