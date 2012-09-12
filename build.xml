@@ -124,7 +124,7 @@
 	<target name="drush-run-rsync-with-delete" description="Runs drush rsync with delete flag">
 		<!-- Rsync the project - remove old files -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
-			<arg line="rsync ./ @${environment} --exclude-files -y --delete" />
+			<arg line="rsync ./ @${environment} --exclude-files -y --delete -v" />
 		</exec>
 	</target>
 
