@@ -96,7 +96,7 @@
 			</fileset>
 		</copy>
 		
-		<copy file="htaccess.htaccess" tofile="tmp/${ant.project.name}/.htaccess" filtering="true" overwrite="true" />
+		<copy file="htaccess.htaccess" tofile="tmp/${ant.project.name}/.htaccess" filtering="true" overwrite="true" failonerror="false" />
 		
 		<chmod perm="u+w">
 			<fileset dir="tmp/${ant.project.name}">
