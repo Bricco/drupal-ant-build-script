@@ -13,21 +13,21 @@
 		&lt;property name="environment" value="DEV" /&gt;
 	</fail>
 
-	
+
 	<filter filtersfile="environment.${environment}.properties" />
 	<filter token="deploy.dir" value="${deploy.dir}" />
 
 	<!-- this is called from Bamboo deploy jobs -->
 	<target name="deploy-all" depends="drush-setup,drush-make,copy-php,drush-run-rsync-with-delete,drush-runs,drush-run-cc,drush-cleanup" description="Full install of Drupal based on the make file"/>
-	
+
 	<!-- this is called from Bamboo automatic jobs -->
 	<target name="deploy-php" depends="drush-setup,copy-php,drush-run-rsync-no-delete,drush-run-cc,drush-cleanup" description="Copies PHP to the Drupal installation"/>
-	
+
 	<target name="install" depends="drush-setup" description="Install a fresh Drupal locally based on the make file into the deploy dir.">
-		
+
 		<symlink action="delete" link="${deploy.dir}/sites/all/modules/custom" failonerror="false" />
 		<symlink action="delete" link="${deploy.dir}/sites/all/themes/custom" failonerror="false" />
-		
+
 		<move file="${deploy.dir}/sites/default/files" tofile="/tmp/${ant.project.name}_files" failonerror="false" />
 
 		<chmod file="${deploy.dir}/sites/default/settings.php" perm="u+w" />
@@ -36,7 +36,7 @@
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
 			<arg line="make ${ant.project.name}.make ${deploy.dir}" />
 		</exec>
-		
+
 
 		<copy todir="${deploy.dir}/sites/" filtering="TRUE">
 			<fileset dir="sites">
@@ -47,7 +47,7 @@
 
 		<symlink overwrite="true" failonerror="true" link="${deploy.dir}/sites/all/modules/custom" resource="${basedir}/sites/all/modules/custom" />
 		<symlink overwrite="true" failonerror="true" link="${deploy.dir}/sites/all/themes/custom" resource="${basedir}/sites/all/themes/custom" />
-		
+
 
 		<move file="/tmp/${ant.project.name}_files" tofile="${deploy.dir}/sites/default/files" failonerror="false" />
 		<chmod perm="g+w" dir="${deploy.dir}/sites/default/files" />
@@ -60,13 +60,13 @@
 		<delete dir="tmp/" failonerror="false"/>
 		<mkdir dir="tmp/" />
 	</target>
-	
+
 	<target name="drush-make" description="Run drush make based on the make file">
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
 			<arg line="make ${ant.project.name}.make tmp/${ant.project.name}" />
 		</exec>
 	</target>
-	
+
 	<target name="copy-php" description="Copies PHP to the Drupal installation in tmp folder">
 		<mkdir dir="tmp/${ant.project.name}/scripts"/>
 		<copy todir="tmp/${ant.project.name}/scripts" filtering="true" overwrite="true">
@@ -95,7 +95,9 @@
 				<include name="**/*.php" />
 			</fileset>
 		</copy>
-
+		
+		<copy file="htaccess.htaccess" tofile="tmp/${ant.project.name}/.htaccess" filtering="true" overwrite="true" />
+		
 		<chmod perm="u+w">
 			<fileset dir="tmp/${ant.project.name}">
 				<include name="**/settings.php" />
@@ -150,27 +152,27 @@
 	<target name="update-local-files" depends="drush-setup" description="Update the local files from PROD">
 		<!-- sync the files dir -->
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
-			<arg line="rsync @${ant.project.name}.PROD:sites/default/files/ ${deploy.dir}/sites/default/files/ -y -v" />
+			<arg line="rsync -y @${ant.project.name}.PROD:sites/default/files/ ${deploy.dir}/sites/default/files/" />
 		</exec>
 	</target>
 	<target name="update-local-database" depends="drush-setup" description="Updates the local database from PROD">
 		<!-- sync the database -->
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
-			<arg line="sql-sync @${ant.project.name}.PROD @${ant.project.name}.${environment} --no-ordered-dump -y -v" />
+			<arg line="sql-sync @${ant.project.name}.PROD @${ant.project.name}.${environment} --no-ordered-dump -y" />
 		</exec>
 	</target>
-	
+
 	<target name="test-content-update" depends="drush-setup" description="Updates the TEST environment from the content from the PROD environment">
 		<!-- sync the files dir -->
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
-			<arg line="rsync @PROD:sites/default/files/ /srv/www/sites/default/files/ -y -v" />
+			<arg line="rsync @PROD:sites/default/files/ /srv/www/sites/default/files/ -y" />
 		</exec>
 
 		<!-- sync the database -->
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
-			<arg line="sql-sync @PROD @TEST -y -v --no-ordered-dump --no-cache" />
+			<arg line="sql-sync @PROD @TEST -y --no-ordered-dump --no-cache" />
 		</exec>
 	</target>
-	
+
 
 </project>
