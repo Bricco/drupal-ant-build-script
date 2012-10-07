@@ -1,0 +1,200 @@
+<project name="drupal-ant-build-script" default="install" basedir=".">
+	
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+	
+	<available file="${drupal.deploy.dir}" property="drupal.deploy.dir.exists" />
+	
+	<fail unless="drupal.deploy.dir.exists">
+		Property drupal.deploy.dir must be set.
+		For developers: Set the property in Eclipse Window > Preferences > Ant > Runtime > Properties > Global properties 
+		The directory must exist!
+	</fail>
+	<property name="deploy.dir" value="${drupal.deploy.dir}/${ant.project.name}" />
+
+	<fail unless="environment">
+		You have to set the environment property. I e
+		&lt;property name="environment" value="DEV" /&gt;
+	</fail>
+
+
+	<filter filtersfile="environment.${environment}.properties" />
+	<filter token="deploy.dir" value="${deploy.dir}" />
+
+	<!-- this is called from Bamboo deploy jobs -->
+	<target name="deploy-all" depends="drush-setup,drush-make,copy-php,drush-run-rsync-with-delete,drush-runs,drush-cleanup" description="Full install of Drupal based on the make file"/>
+
+	<!-- this is called from Bamboo automatic jobs -->
+	<target name="deploy-php" depends="drush-setup,copy-php,drush-run-rsync-no-delete,drush-run-cc,drush-cleanup" description="Copies PHP to the Drupal installation"/>
+
+	<target name="install" depends="drush-setup, drush-make" description="Install a fresh Drupal locally based on the make file into the deploy dir.">
+
+		<symlink action="delete" link="${deploy.dir}/sites/all/modules/custom" failonerror="false" />
+		<symlink action="delete" link="${deploy.dir}/sites/all/themes/custom" failonerror="false" />
+		
+		<!-- make all settings.php files writable -->
+		<chmod perm="u+w">
+  			<fileset dir="${deploy.dir}">
+   			 	<include name="**/settings.php"/>
+  			</fileset>
+		</chmod>
+		
+		<move todir="${deploy.dir}">
+					<fileset dir="tmp/${ant.project.name}" />
+		</move>
+	
+		<copy file="htaccess.htaccess" tofile="tmp/${ant.project.name}/.htaccess" filtering="true" overwrite="true" failonerror="false" />
+		
+		<copy todir="${deploy.dir}/sites/" filtering="TRUE">
+			<fileset dir="sites">
+				<exclude name="all/**"/>
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+
+		<symlink overwrite="true" failonerror="true" link="${deploy.dir}/sites/all/modules/custom" resource="${basedir}/sites/all/modules/custom" />
+		<symlink overwrite="true" failonerror="true" link="${deploy.dir}/sites/all/themes/custom" resource="${basedir}/sites/all/themes/custom" />
+
+		<delete dir="tmp" />
+		
+	</target>
+
+	<target name="drush-setup" description="Sets up drush env">
+		<mkdir dir="${user.home}/.drush" />
+		<copy file="${ant.project.name}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
+
+		<delete dir="tmp/" failonerror="false"/>
+		<mkdir dir="tmp/" />
+	</target>
+
+	<target name="drush-make" description="Run drush make based on the make file">
+		<exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
+			<arg line="make ${ant.project.name}.make tmp/${ant.project.name}" />
+		</exec>
+	</target>
+
+	<target name="copy-php" description="Copies PHP to the Drupal installation in tmp folder">
+		<mkdir dir="tmp/${ant.project.name}/scripts"/>
+		<copy todir="tmp/${ant.project.name}/scripts" filtering="true" overwrite="true">
+			<fileset dir="scripts">
+				<include name="*.sh"/>
+			</fileset>
+		</copy>
+		<chmod perm="a+x">
+			<fileset dir="tmp/${ant.project.name}/scripts">
+				<include name="*.sh"/>
+			</fileset>
+		</chmod>
+		<copy todir="tmp/${ant.project.name}/sites" filtering="false" overwrite="true">
+			<fileset dir="sites">
+				<exclude name="**/*.inc" />
+				<exclude name="**/*.info" />
+				<exclude name="**/*.module" />
+				<exclude name="**/*.php" />
+			</fileset>
+		</copy>
+		<copy todir="tmp/${ant.project.name}/sites" filtering="true" overwrite="true">
+			<fileset dir="sites">
+				<include name="**/*.inc" />
+				<include name="**/*.info" />
+				<include name="**/*.module" />
+				<include name="**/*.php" />
+			</fileset>
+		</copy>
+		
+		<copy file="htaccess.htaccess" tofile="tmp/${ant.project.name}/.htaccess" filtering="true" overwrite="true" failonerror="false" />
+		
+		<chmod perm="u+w">
+			<fileset dir="tmp/${ant.project.name}">
+				<include name="**/settings.php" />
+			</fileset>
+		</chmod>
+	</target>
+
+	<target name="drush-runs" description="Runs various drush commands">
+		<foreach target="drush-runs-each-site" param="dir.name">	
+			<path>  
+				<dirset dir="${basedir}/sites" >
+					<include name="*" />
+					<exclude name="all"/>
+					<exclude name="default"/>
+				</dirset>
+			</path>		
+		</foreach>
+	</target>
+
+	<target name="drush-runs-each-site" description="Runs various drush commands for each site">
+	  <basename file="${dir.name}" property="site.name"/>
+		                  
+		<!-- Run all pending updates -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
+			<arg line="@${environment}-${module.name} updb -y" />
+		</exec>
+
+		<!-- Enable features module -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
+			<arg line="@${environment}-${module.name} en features -y" />
+		</exec>
+		<!-- Revert all features -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
+			<arg line="@${environment}-${module.name} fra -y" />
+		</exec>
+		
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}">
+			<arg line="@${environment}-${module.name} cc all" />
+		</exec>
+
+	</target>
+
+	<target name="drush-run-rsync-no-delete" description="Runs drush rsync without delete flag">
+		<!-- Rsync the project -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
+			<arg line="rsync ./ @${environment} -y -v" />
+		</exec>
+	</target>
+
+	<target name="drush-run-rsync-with-delete" description="Runs drush rsync with delete flag">
+		<!-- Rsync the project - remove old files -->
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}" failonerror="true">
+			<arg line="rsync ./ @${environment} --delete -y -v" />
+		</exec>
+	</target>
+
+	<target name="drush-run-cc" description="Runs drush cache clear">
+		<exec executable="drush" resolveexecutable="true" dir="tmp/${ant.project.name}">
+			<arg line="@${environment} cc all" />
+		</exec>
+	</target>
+
+	<target name="drush-cleanup" description="Cleans up after deploy">
+		<delete dir="tmp" />
+	</target>
+
+	<target name="update-local-content" depends="update-local-database,update-local-files" description="Update the local content with PROD data" />
+
+	<target name="update-local-files" depends="drush-setup" description="Update the local files from PROD">
+		<!-- sync the files dir -->
+		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
+			<arg line="rsync -y @${ant.project.name}.PROD:sites/default/files/ ${deploy.dir}/sites/default/files/" />
+		</exec>
+	</target>
+	<target name="update-local-database" depends="drush-setup" description="Updates the local database from PROD">
+		<!-- sync the database -->
+		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
+			<arg line="sql-sync @${ant.project.name}.PROD @${ant.project.name}.${environment} --no-ordered-dump -y" />
+		</exec>
+	</target>
+
+	<target name="test-content-update" depends="drush-setup" description="Updates the TEST environment from the content from the PROD environment">
+		<!-- sync the files dir -->
+		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
+			<arg line="rsync @PROD:sites/default/files/ /srv/www/sites/default/files/ -y" />
+		</exec>
+
+		<!-- sync the database -->
+		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
+			<arg line="sql-sync @PROD @TEST -y --no-ordered-dump --no-cache" />
+		</exec>
+	</target>
+
+
+</project>
