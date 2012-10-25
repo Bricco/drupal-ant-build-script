@@ -71,7 +71,7 @@
 		<mkdir dir="tmp/${ant.project.name}/scripts"/>
 		<copy todir="tmp/${ant.project.name}/scripts" filtering="true" overwrite="true">
 			<fileset dir="scripts">
-				<include name="*.sh"/>
+				<include name="*"/>
 			</fileset>
 		</copy>
 		<chmod perm="a+x">
