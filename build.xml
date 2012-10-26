@@ -102,16 +102,16 @@
 
 		<!-- Run all pending updates -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp" failonerror="true">
-			<arg line="@${environment} updb -y" />
+			<arg line="-y @${environment} updb" />
 		</exec>
 
 		<!-- Enable features module -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp" failonerror="true">
-			<arg line="@${environment} en features -y" />
+			<arg line="-y @${environment} en features" />
 		</exec>
 		<!-- Revert all features -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp" failonerror="true">
-			<arg line="@${environment} fra -y" />
+			<arg line="-y @${environment} fra" />
 		</exec>
 
 	</target>
@@ -119,14 +119,14 @@
 	<target name="drush-run-rsync-no-delete" description="Runs drush rsync without delete flag">
 		<!-- Rsync the project -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp" failonerror="true">
-			<arg line="rsync ${basedir}/tmp/ @${environment} -y -v" />
+			<arg line="-y rsync ${basedir}/tmp/ @${environment}" />
 		</exec>
 	</target>
 
 	<target name="drush-run-rsync-with-delete" description="Runs drush rsync with delete flag">
 		<!-- Rsync the project - remove old files -->
 		<exec executable="drush" resolveexecutable="true" dir="" failonerror="true">
-			<arg line="rsync ${basedir}/tmp/ @${environment} --delete -y -v" />
+			<arg line="-y rsync ${basedir}/tmp/ @${environment} --delete" />
 		</exec>
 	</target>
 
@@ -145,7 +145,7 @@
 	</target>
 	<target name="varnish-reload" depends="check-vcl" description="Reloads Varnish config if present in project">
     <exec executable="drush" resolveexecutable="true" dir="tmp" failonerror="true">
-      <arg line="rsync ./scrips/varnish.vcl @${environment}:../ -y -v" />
+      <arg line="-y rsync ./scrips/varnish.vcl @${environment}:../" />
     </exec>
     <exec executable="drush" resolveexecutable="true" dir="${basedir}">
       <arg line="@${environment} ssh 'cp scripts/varnish.vcl /mnt/persist/www/'" />
@@ -190,25 +190,25 @@
 	<target name="local-update-files" depends="drush-setup" description="Update the local files from PROD">
 		<!-- sync the files dir -->
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
-			<arg line="rsync -y @${ant.project.name}.PROD:sites/default/files/ ${deploy.dir}/sites/default/files/" />
+			<arg line="-y rsync @${ant.project.name}.PROD:sites/default/files/ ${deploy.dir}/sites/default/files/" />
 		</exec>
 	</target>
 	<target name="local-update-database" depends="drush-setup" description="Updates the local database from PROD">
 		<!-- sync the database -->
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
-			<arg line="sql-sync @${ant.project.name}.PROD @${ant.project.name}.${environment} --no-ordered-dump -y" />
+			<arg line="-y sql-sync @${ant.project.name}.PROD @${ant.project.name}.${environment} --no-ordered-dump" />
 		</exec>
 	</target>
 
 	<target name="test-content-update" depends="drush-setup" description="Updates the TEST environment from the content from the PROD environment">
 		<!-- sync the files dir -->
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
-			<arg line="rsync @PROD:sites/default/files/ /srv/www/sites/default/files/ -y" />
+			<arg line="-y rsync @PROD:sites/default/files/ /srv/www/sites/default/files/" />
 		</exec>
 
 		<!-- sync the database -->
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
-			<arg line="sql-sync @PROD @TEST -y --no-ordered-dump --no-cache" />
+			<arg line="-y sql-sync @PROD @TEST --no-ordered-dump --no-cache" />
 		</exec>
 	</target>
 
