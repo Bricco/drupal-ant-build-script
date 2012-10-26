@@ -45,10 +45,10 @@
 
 	
 	<!-- this is called from Bamboo deploy jobs -->
-	<target name="deploy-all" depends="drush-setup,drush-make,copy-php,drush-run-rsync-with-delete,drush-runs,drush-run-cc,drush-cleanup,varnish-reload" description="Full install of Drupal based on the make file"/>
+	<target name="deploy-all" depends="drush-setup,drush-make,copy-php,drush-run-rsync-with-delete,drush-runs,drush-run-cc,varnish-reload,cleanup" description="Full install of Drupal based on the make file"/>
 
 	<!-- this is called from Bamboo automatic jobs -->
-	<target name="deploy-auto" depends="drush-setup,copy-php,drush-run-rsync-no-delete,drush-run-cc,drush-cleanup" description="Copies PHP to the Drupal installation"/>
+	<target name="deploy-auto" depends="drush-setup,copy-php,drush-run-rsync-no-delete,drush-run-cc,cleanup" description="Copies PHP to the Drupal installation"/>
 
 	
 	
@@ -117,14 +117,14 @@
 
 	<target name="drush-run-rsync-no-delete" description="Runs drush rsync without delete flag">
 		<!-- Rsync the project -->
-		<exec executable="drush" resolveexecutable="true" dir="tmp" failonerror="true">
+		<exec executable="drush" resolveexecutable="true" failonerror="true">
 			<arg line="-y rsync ${basedir}/tmp/ @${environment}" />
 		</exec>
 	</target>
 
 	<target name="drush-run-rsync-with-delete" description="Runs drush rsync with delete flag">
 		<!-- Rsync the project - remove old files -->
-		<exec executable="drush" resolveexecutable="true" dir="" failonerror="true">
+		<exec executable="drush" resolveexecutable="true" failonerror="true">
 			<arg line="-y rsync ${basedir}/tmp/ @${environment} --delete" />
 		</exec>
 	</target>
@@ -135,22 +135,32 @@
 		</exec>
 	</target>
 
-	<target name="drush-cleanup" description="Cleans up after deploy">
+	<target name="cleanup" description="Cleans up after deploy">
 		<delete dir="tmp" />
 	</target>
 
 	<target name="check-vcl">
     <available file="scripts/varnish.vcl" property="vcl.present"/>
 	</target>
-	<target name="varnish-reload" depends="check-vcl" description="Reloads Varnish config if present in project">
-    <exec executable="drush" resolveexecutable="true" dir="tmp" failonerror="true">
-      <arg line="-y rsync ./scrips/varnish.vcl @${environment}:../" />
+	<target name="varnish-reload" depends="check-vcl" description="Reloads Varnish config if VCL is present in project">
+		<!-- default VCL location (Cloudnet) -->
+		<property name="vclfile" value="/mnt/persist/www/varnish.vcl"/>
+		
+		<!-- copy VCL file to default location -->
+    <exec executable="drush" resolveexecutable="true" failonerror="true">
+      <arg line="-y rsync ${basedir}./scripts/varnish.vcl @${environment}:${vclfile}" />
+    </exec>
+		
+		<!-- load new VCL into Varnish -->
+    <tstamp>
+      <format property="TSTAMP" pattern="hhmmss"/>
+    </tstamp>
+    <property name="vclconfigname" value="VCL_${DSTAMP}${TSTAMP}"/>
+    <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+      <arg line="@${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 vcl.load ${vclconfigname}  ${vclfile}'" />
     </exec>
     <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-      <arg line="@${environment} ssh 'cp scripts/varnish.vcl /mnt/persist/www/'" />
-    </exec>
-    <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-      <arg line="@${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 vcl.load '" />
+      <arg line="@${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 vcl.use ${vclconfigname}'" />
     </exec>
 	</target>
 	
