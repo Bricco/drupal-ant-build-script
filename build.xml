@@ -32,7 +32,7 @@
       </not>
     </and>
   </condition>
-  <fail unless="drupal.deploy.dir.exists">
+  <fail if="drupal.deploy.dir.missing">
     Property drupal.deploy.dir must be set.
     For developers: Set the property in Eclipse Window > Preferences > Ant > Runtime > Properties > Global properties 
     The directory must exist!
