@@ -57,7 +57,6 @@
 		<copy file="${ant.project.name}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
 
 		<delete dir="tmp/" failonerror="false"/>
-		<mkdir dir="tmp/" />
 	</target>
 
 	<target name="drush-make" description="Run drush make based on the make file">
