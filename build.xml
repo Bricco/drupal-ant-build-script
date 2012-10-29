@@ -151,10 +151,10 @@
 			<format property="TSTAMP" pattern="hhmmss"/>
 		</tstamp>
 		<property name="vclconfigname" value="VCL_${DSTAMP}${TSTAMP}"/>
-		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
+		<exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
 			<arg line="@${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 vcl.load ${vclconfigname}  ${vclfile}'" />
     </exec>
-   	<exec executable="drush" resolveexecutable="true" dir="${basedir}">
+   	<exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
 			<arg line="@${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 vcl.use ${vclconfigname}'" />
 	    </exec>
 	</target>
