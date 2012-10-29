@@ -145,12 +145,7 @@
 	<target name="varnish-reload" depends="vcl.check" if="vcl.present" description="Reloads Varnish config if VCL is present in project">
 		<!-- default VCL location (Cloudnet) -->
 		<property name="vclfile" value="/mnt/persist/www/varnish.vcl"/>
-		
-		<!-- copy VCL file to default location -->
-		<exec executable="drush" resolveexecutable="true" failonerror="true">
-			<arg line="-y rsync ${basedir}/scripts/varnish.vcl @${environment}:${vclfile}" />
-		</exec>
-		
+				
 		<!-- load new VCL into Varnish -->
 		<tstamp>
 			<format property="TSTAMP" pattern="hhmmss"/>
@@ -158,8 +153,8 @@
 		<property name="vclconfigname" value="VCL_${DSTAMP}${TSTAMP}"/>
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}">
 			<arg line="@${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 vcl.load ${vclconfigname}  ${vclfile}'" />
-	    </exec>
-    	<exec executable="drush" resolveexecutable="true" dir="${basedir}">
+    </exec>
+   	<exec executable="drush" resolveexecutable="true" dir="${basedir}">
 			<arg line="@${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 vcl.use ${vclconfigname}'" />
 	    </exec>
 	</target>
