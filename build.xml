@@ -23,12 +23,12 @@
 		&lt;property name="environment" value="DEV" /&gt;
 	</fail>
 
-  <!-- fail if DEV and drupal.deploy.dir is NOT set -->
+	<!-- fail if DEV and drupal.deploy.dir is NOT a valid dir -->
   <condition property="drupal.deploy.dir.missing">
     <and>
       <equals arg1="${environment}" arg2="DEV" />
       <not>
-        <isset property="${drupal.deploy.dir}" />
+        <available file="${drupal.deploy.dir}" />
       </not>
     </and>
   </condition>
@@ -37,7 +37,7 @@
     For developers: Set the property in Eclipse Window > Preferences > Ant > Runtime > Properties > Global properties 
     The directory must exist!
   </fail>
-  
+
 	<!-- set up filtering -->
   <property name="deploy.dir" value="${drupal.deploy.dir}/${ant.project.name}" />
   <filter token="deploy.dir" value="${deploy.dir}" />
