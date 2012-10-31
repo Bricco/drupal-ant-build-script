@@ -67,7 +67,7 @@
 
 	<target name="copy-php" description="Copies PHP to the Drupal installation in tmp folder">
 		<mkdir dir="tmp/scripts"/>
-		<copy todir="tmp/scripts" filtering="true" overwrite="true">
+		<copy todir="tmp/scripts" filtering="true" overwrite="true" failonerror="false">
 			<fileset dir="scripts">
 				<include name="*"/>
 			</fileset>
@@ -101,16 +101,16 @@
 
 		<!-- Run all pending updates -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp" failonerror="true">
-			<arg line="-y @${environment} updb" />
+			<arg line="-y @${ant.project.name}.${environment} updb" />
 		</exec>
 
 		<!-- Enable features module -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp" failonerror="true">
-			<arg line="-y @${environment} en features" />
+			<arg line="-y @${ant.project.name}.${environment} en features" />
 		</exec>
 		<!-- Revert all features -->
 		<exec executable="drush" resolveexecutable="true" dir="tmp" failonerror="true">
-			<arg line="-y @${environment} fra" />
+			<arg line="-y @${ant.project.name}.${environment} fra" />
 		</exec>
 
 	</target>
@@ -118,20 +118,20 @@
 	<target name="drush-run-rsync-no-delete" description="Runs drush rsync without delete flag">
 		<!-- Rsync the project -->
 		<exec executable="drush" resolveexecutable="true" failonerror="true">
-			<arg line="-y rsync ${basedir}/tmp/ @${environment}" />
+			<arg line="-y rsync ${basedir}/tmp/ @${ant.project.name}.${environment}" />
 		</exec>
 	</target>
 
 	<target name="drush-run-rsync-with-delete" description="Runs drush rsync with delete flag">
 		<!-- Rsync the project - remove old files -->
 		<exec executable="drush" resolveexecutable="true" failonerror="true">
-			<arg line="-y rsync ${basedir}/tmp/ @${environment} --delete" />
+			<arg line="-y rsync ${basedir}/tmp/ @${ant.project.name}.${environment} --delete" />
 		</exec>
 	</target>
 
 	<target name="drush-run-cc" description="Runs drush cache clear">
 		<exec executable="drush" resolveexecutable="true" dir="tmp">
-			<arg line="@${environment} cc all" />
+			<arg line="@${ant.project.name}.${environment} cc all" />
 		</exec>
 	</target>
 
@@ -152,42 +152,27 @@
 		</tstamp>
 		<property name="vclconfigname" value="VCL_${DSTAMP}${TSTAMP}"/>
 		<exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
-			<arg line="@${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 vcl.load ${vclconfigname}  ${vclfile}'" />
+			<arg line="@${ant.project.name}.${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 vcl.load ${vclconfigname}  ${vclfile}'" />
     </exec>
    	<exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
-			<arg line="@${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 vcl.use ${vclconfigname}'" />
+			<arg line="@${ant.project.name}.${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 vcl.use ${vclconfigname}'" />
 	    </exec>
 	</target>
 	
-  <target name="local-install" depends="drush-setup" description="Install a fresh Drupal locally based on the make file into the deploy dir.">
-  	
+	<target name="local-pre-make">
     <symlink action="delete" link="${deploy.dir}/sites/all/modules/custom" failonerror="false" />
     <symlink action="delete" link="${deploy.dir}/sites/all/themes/custom" failonerror="false" />
-
     <move file="${deploy.dir}/sites/default/files" tofile="/tmp/${ant.project.name}_files" failonerror="false" />
-
-    <chmod file="${deploy.dir}/sites/default/settings.php" perm="u+w" />
-    <delete dir="${deploy.dir}" />
-
-    <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-      <arg line="make ${ant.project.name}.make ${deploy.dir}" />
-    </exec>
-
-
-    <copy todir="${deploy.dir}/sites/" filtering="TRUE">
-      <fileset dir="sites">
-        <exclude name="all/**"/>
-        <include name="**/settings.php"/>
-      </fileset>
-    </copy>
-
+	</target>		
+	
+  <target name="local-post-make">
     <symlink overwrite="true" failonerror="true" link="${deploy.dir}/sites/all/modules/custom" resource="${basedir}/sites/all/modules/custom" />
     <symlink overwrite="true" failonerror="true" link="${deploy.dir}/sites/all/themes/custom" resource="${basedir}/sites/all/themes/custom" />
-
-
     <move file="/tmp/${ant.project.name}_files" tofile="${deploy.dir}/sites/default/files" failonerror="false" />
     <chmod perm="g+w" dir="${deploy.dir}/sites/default/files" />
-  </target>
+	</target>
+	
+	<target name="local-install" depends="drush-setup,local-pre-make,drush-make,copy-php,drush-run-rsync-with-delete,local-post-make,drush-runs,drush-run-cc,cleanup" description="Full local install of Drupal based on the make file"/>
 	
 	<target name="local-update-content" depends="local-update-database,local-update-files" description="Update the local content with PROD data" />
 
