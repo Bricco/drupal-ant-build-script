@@ -7,6 +7,7 @@ Requirements
 ------------
 * Ant 1.8
 * Drush 5.x
+* Features 1.0 (if features is used it has to be at least 1.0)
 
 Usage
 -----
