@@ -166,7 +166,9 @@
 	</target>		
 	
   <target name="local-post-make">
+    <delete dir="${deploy.dir}/sites/all/modules/custom" />
     <symlink overwrite="true" failonerror="true" link="${deploy.dir}/sites/all/modules/custom" resource="${basedir}/sites/all/modules/custom" />
+    <delete dir="${deploy.dir}/sites/all/themes/custom" />
     <symlink overwrite="true" failonerror="true" link="${deploy.dir}/sites/all/themes/custom" resource="${basedir}/sites/all/themes/custom" />
     <move file="/tmp/${ant.project.name}_files" tofile="${deploy.dir}/sites/default/files" failonerror="false" />
     <chmod perm="g+w" dir="${deploy.dir}/sites/default/files" />
