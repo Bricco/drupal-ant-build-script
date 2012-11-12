@@ -73,11 +73,112 @@
   <!-- private target, sets up drush env -->
   <target name="-drush-setup">
     <mkdir dir="${user.home}/.drush" />
-    <copy file="${ant.project.name}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
+    <property name="drush-aliases-file" value="${user.home}/.drush/${ant.project.name}.aliases.drushrc.php" />
 
+    <!-- generate drush aliases file -->
+    <echo file="${drush-aliases-file}">&lt;?php 
+      $notdump = array(
+        'cache',
+        'cache_filter',
+        'cache_menu',
+        'cache_page', 
+        'cache_media_xml', 
+        'cache_metatag', 
+        'cache_path', 
+        'cache_rules', 
+        'cache_token', 
+        'cache_update', 
+        'cache_views', 
+        'cache_views_data',
+        'cache_block',
+        'cache_bootstrap',
+        'cache_field',
+        'cache_form',
+        'cache_image',
+        'history',
+        'sessions',
+        'watchdog',
+        'search_dataset',
+        'search_index',
+        'search_node_links',
+        'search_total',
+      );
+    </echo>
+    <available file="environment.DEV.properties" property="dev-env-file-exists" />
+    <antcall target="-drush-aliases-append-DEV" />
+    <available file="environment.TEST.properties" property="test-env-file-exists" />
+    <antcall target="-drush-aliases-append-TEST" />
+    <available file="environment.PROD.properties" property="prod-env-file-exists" />
+    <antcall target="-drush-aliases-append-PROD" />
+    <echo file="${drush-aliases-file}" append="true">?&gt;</echo>
+
+    <!-- delete tmp dir just in case -->   
     <delete dir="tmp/" failonerror="false" />
   </target>
 
+  <!-- private target, append settings from DEV env file -->
+  <target name="-drush-aliases-append-DEV" if="dev-env-file-exists">
+    <antcall target="-drush-aliases-append">
+      <param name="append.env" value="DEV" />
+      <param name="append.env.file" value="environment.DEV.properties" />
+    </antcall>
+  </target>
+
+  <!-- private target, append settings from TEST env file -->
+  <target name="-drush-aliases-append-TEST" if="test-env-file-exists">
+    <antcall target="-drush-aliases-append">
+      <param name="append.env" value="TEST" />
+      <param name="append.env.file" value="environment.TEST.properties" />
+    </antcall>
+  </target>
+
+  <!-- private target, append settings from PROD env file -->
+  <target name="-drush-aliases-append-PROD" if="prod-env-file-exists">
+    <antcall target="-drush-aliases-append">
+      <param name="append.env" value="PROD" />
+      <param name="append.env.file" value="environment.PROD.properties" />
+    </antcall>
+  </target>
+
+  <!-- private target, append base settings from env file -->
+  <target name="-drush-aliases-append">
+    <property file="${append.env.file}" />
+    <property name="drupal.root" value="${deploy.dir}" />
+    <echo file="${drush-aliases-file}" append="true">
+      $aliases['${append.env}'] = array ();
+      $aliases['${append.env}']['uri'] = '${drupal.uri}';
+      $aliases['${append.env}']['root'] = '${drupal.root}';
+      $aliases['${append.env}']['dump-dir'] = '/var/tmp';
+      $aliases['${append.env}']['databases'] = array('default' => array('default' => array('host' => '${db.host}', 'driver' => 'mysql', 'prefix' => '', 'port' => '' )));
+      $aliases['${append.env}']['databases']['default']['default']['database'] = '${db.database}';
+      $aliases['${append.env}']['databases']['default']['default']['username'] = '${db.database}';
+      $aliases['${append.env}']['databases']['default']['default']['password'] = '${db.password}';
+      $aliases['${append.env}']['ssh-options'] = '-o PasswordAuthentication=yes';
+      $aliases['${append.env}']['command-specific'] = array(
+              'rsync' => array('exclude-paths' => 'sites/default/files/'),
+              'sql-sync' => array('no-cache' => TRUE, 'skip-tables-key' => 'custom', 'skip-tables' => array('custom' => $notdump)),
+      );
+        </echo>
+    <antcall target="-drush-aliases-append-remote" />
+    <antcall target="-drush-aliases-append-pathaliases" />
+  </target>
+
+  <!-- private target, append remote.* from env file -->
+  <target name="-drush-aliases-append-remote" if="remote.host">
+    <echo file="${drush-aliases-file}" append="true">
+      $aliases['${append.env}']['remote-host'] = '${remote.host}';
+      $aliases['${append.env}']['remote-user'] = '${remote.user}';
+    </echo>
+  </target>
+
+  <!-- private target, append path-aliases from env file -->
+  <target name="-drush-aliases-append-pathaliases" if="path-aliases.drush">
+    <echo file="${drush-aliases-file}" append="true">
+      $aliases['${append.env}']['path-aliases']['%drush'] = '${path-aliases.drush}';
+      $aliases['${append.env}']['path-aliases']['%drush-script'] = '${path-aliases.drush-script}';
+    </echo>
+  </target>
+  
   <!-- private target, run drush make based on the make file -->
   <target name="-drush-make">
     <exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
