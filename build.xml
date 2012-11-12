@@ -1,7 +1,7 @@
 <project name="drupal-ant-build-script" basedir=".">
 
   <!-- check ant version -->
-  <antversion property="antversion" atleast="1.8"/>
+  <antversion property="antversion" atleast="1.8" />
   <fail unless="antversion">
     Ant must be at least version 1.8
   </fail>
@@ -12,7 +12,7 @@
   </exec>
   <!-- drushversionstring should look like this: "drush version 5.7" -->
   <condition property="drushversion">
-    <contains string="${drushversionstring}" substring=" 5."/>
+    <contains string="${drushversionstring}" substring=" 5." />
   </condition>
   <fail unless="drushversion">
     Drush must be version 5.x
@@ -43,16 +43,16 @@
   <filter token="deploy.dir" value="${deploy.dir}" />
   <filter filtersfile="environment.${environment}.properties" />
 
-  
+
   <!-- public target called from Bamboo deploy jobs -->
-  <target name="deploy-all" depends="-drush-setup,-drush-make,-copy-php,-drush-run-rsync-with-delete,-drush-runs,-drush-run-cc,-varnish-reload,-cleanup" description="Full install of Drupal based on the make file"/>
+  <target name="deploy-all" depends="-drush-setup,-drush-make,-copy-php,-drush-run-rsync-with-delete,-drush-runs,-drush-run-cc,-varnish-reload,-cleanup" description="Full install of Drupal based on the make file" />
 
   <!-- public target called from Bamboo automatic jobs -->
-  <target name="deploy-auto" depends="-drush-setup,-copy-php,-drush-run-rsync-no-delete,-drush-run-cc,-cleanup" description="Copies PHP to the Drupal installation"/>
+  <target name="deploy-auto" depends="-drush-setup,-copy-php,-drush-run-rsync-no-delete,-drush-run-cc,-cleanup" description="Copies PHP to the Drupal installation" />
 
   <!-- public target to install locally -->
-  <target name="local-install" depends="-drush-setup,-local-pre-make,-drush-make,-copy-php,-drush-run-rsync-with-delete,-local-post-make,-drush-runs,-drush-run-cc,-cleanup" description="Full local install of Drupal based on the make file"/>
-  
+  <target name="local-install" depends="-drush-setup,-local-pre-make,-drush-make,-copy-php,-drush-run-rsync-with-delete,-local-post-make,-drush-runs,-drush-run-cc,-cleanup" description="Full local install of Drupal based on the make file" />
+
   <!-- public target to update content locally -->
   <target name="local-update-content" depends="-local-update-database,-local-update-files" description="Update the local content with PROD data" />
 
@@ -69,13 +69,13 @@
     </exec>
   </target>
 
-  
+
   <!-- private target, sets up drush env -->
   <target name="-drush-setup">
     <mkdir dir="${user.home}/.drush" />
     <copy file="${ant.project.name}.aliases.drushrc.php" todir="${user.home}/.drush" filtering="true" overwrite="true" />
 
-    <delete dir="tmp/" failonerror="false"/>
+    <delete dir="tmp/" failonerror="false" />
   </target>
 
   <!-- private target, run drush make based on the make file -->
@@ -85,18 +85,18 @@
     </exec>
   </target>
 
-  <available file="./scripts" property="scripts.dir.exists"/>
+  <available file="./scripts" property="scripts.dir.exists" />
   <!-- private target, copies scripts dir to the Drupal installation in tmp folder -->
   <target name="-copy-scripts" if="scripts.dir.exists">
-    <mkdir dir="tmp/scripts"/>
+    <mkdir dir="tmp/scripts" />
     <copy todir="tmp/scripts" filtering="true" overwrite="true" failonerror="false">
       <fileset dir="scripts">
-        <include name="*"/>
+        <include name="*" />
       </fileset>
     </copy>
     <chmod perm="a+x">
       <fileset dir="tmp/scripts">
-        <include name="*.sh"/>
+        <include name="*.sh" />
       </fileset>
     </chmod>
   </target>
@@ -113,9 +113,9 @@
         <include name="**/settings.php" />
       </fileset>
     </copy>
-    
+
     <copy file="htaccess.htaccess" tofile="tmp/.htaccess" filtering="false" overwrite="true" failonerror="false" />
-    
+
     <chmod perm="u+w">
       <fileset dir="tmp">
         <include name="**/settings.php" />
@@ -172,33 +172,33 @@
 
   <!-- private target, check if vcl is present -->
   <target name="-vcl.check">
-    <available file="scripts/varnish.vcl" property="vcl.present"/>
+    <available file="scripts/varnish.vcl" property="vcl.present" />
   </target>
   <!-- private target, reloads Varnish config if VCL is present in project -->
   <target name="-varnish-reload" depends="-vcl.check" if="vcl.present">
     <!-- default VCL location (Cloudnet) -->
-    <property name="vclfile" value="/mnt/persist/www/varnish.vcl"/>
-        
+    <property name="vclfile" value="/mnt/persist/www/varnish.vcl" />
+
     <!-- load new VCL into Varnish -->
     <tstamp>
-      <format property="TSTAMP" pattern="hhmmss"/>
+      <format property="TSTAMP" pattern="hhmmss" />
     </tstamp>
-    <property name="vclconfigname" value="VCL_${DSTAMP}${TSTAMP}"/>
+    <property name="vclconfigname" value="VCL_${DSTAMP}${TSTAMP}" />
     <exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
       <arg line="@${ant.project.name}.${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 vcl.load ${vclconfigname}  ${vclfile}'" />
     </exec>
     <exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
       <arg line="@${ant.project.name}.${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 vcl.use ${vclconfigname}'" />
-      </exec>
+    </exec>
   </target>
-  
+
   <!-- private target -->
   <target name="-local-pre-make">
     <symlink action="delete" link="${deploy.dir}/sites/all/modules/custom" failonerror="false" />
     <symlink action="delete" link="${deploy.dir}/sites/all/themes/custom" failonerror="false" />
     <move file="${deploy.dir}/sites/default/files" tofile="/tmp/${ant.project.name}_files" failonerror="false" />
-  </target>   
-  
+  </target>
+
   <!-- private target -->
   <target name="-local-post-make">
     <delete dir="${deploy.dir}/sites/all/modules/custom" />
@@ -208,7 +208,7 @@
     <move file="/tmp/${ant.project.name}_files" tofile="${deploy.dir}/sites/default/files" failonerror="false" />
     <chmod perm="g+w" dir="${deploy.dir}/sites/default/files" />
   </target>
-  
+
   <!-- private target, update the local files from PROD -->
   <target name="-local-update-files" depends="-drush-setup">
     <!-- sync the files dir -->
@@ -216,7 +216,7 @@
       <arg line="-y rsync @${ant.project.name}.PROD:sites/default/files/ ${deploy.dir}/sites/default/files/" />
     </exec>
   </target>
-	
+
   <!-- private target, update the local database from PROD -->
   <target name="-local-update-database" depends="-drush-setup">
     <!-- sync the database -->
