@@ -1,4 +1,4 @@
-<project name="drupal-ant-build-script" basedir=".">
+<project basedir=".">
 
   <!-- check ant version -->
   <antversion property="antversion" atleast="1.8" />
@@ -60,7 +60,7 @@
   <target name="test-content-update" depends="-drush-setup" description="Updates the TEST environment from the content from the PROD environment">
     <!-- sync the files dir -->
     <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-      <arg line="-y rsync @PROD:sites/default/files/ /srv/www/sites/default/files/" />
+      <arg line="-y rsync @PROD:sites/default/files/ @TEST:sites/default/files/" />
     </exec>
 
     <!-- sync the database -->
@@ -155,7 +155,7 @@
       $aliases['${append.env}']['databases']['default']['default']['password'] = '${db.password}';
       $aliases['${append.env}']['ssh-options'] = '-o PasswordAuthentication=yes';
       $aliases['${append.env}']['command-specific'] = array(
-              'rsync' => array('exclude-paths' => 'sites/default/files/'),
+              'rsync' => array('exclude-files' => TRUE),
               'sql-sync' => array('no-cache' => TRUE, 'skip-tables-key' => 'custom', 'skip-tables' => array('custom' => $notdump)),
       );
         </echo>
