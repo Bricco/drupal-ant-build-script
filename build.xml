@@ -216,7 +216,8 @@
     </copy>
 
     <copy file="htaccess.htaccess" tofile="tmp/.htaccess" filtering="false" overwrite="true" failonerror="false" />
-
+    <copy file="robots.txt" tofile="tmp/robots.txt" filtering="false" overwrite="true" failonerror="false" />
+  	
     <chmod perm="u+w">
       <fileset dir="tmp">
         <include name="**/settings.php" />
