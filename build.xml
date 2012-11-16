@@ -67,6 +67,11 @@
     <exec executable="drush" resolveexecutable="true" dir="${basedir}">
       <arg line="-y sql-sync @PROD @TEST --no-ordered-dump --no-cache" />
     </exec>
+
+    <!-- clear cache on TEST -->
+    <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+      <arg line="@${ant.project.name}.TEST cc all" />
+    </exec>
   </target>
 
 
