@@ -45,7 +45,7 @@
 
 
   <!-- public target called from Bamboo deploy jobs -->
-  <target name="deploy-all" depends="-drush-setup,-drush-make,-copy-php,-drush-run-rsync-with-delete,-drush-runs,-drush-run-cc,-varnish-reload,-cleanup" description="Full install of Drupal based on the make file" />
+  <target name="deploy-all" depends="-drush-setup,-drush-make,-copy-php,-drush-run-rsync-with-delete,-drush-clear-apc,-drush-runs,-drush-run-cc,-varnish-reload,-cleanup" description="Full install of Drupal based on the make file" />
 
   <!-- public target called from Bamboo automatic jobs -->
   <target name="deploy-auto" depends="-drush-setup,-copy-php,-drush-run-rsync-no-delete,-drush-run-cc,-cleanup" description="Copies PHP to the Drupal installation" />
@@ -276,6 +276,14 @@
   <target name="-cleanup">
     <delete dir="tmp" />
   </target>
+	
+   <!-- private target, clear apc cache -->
+    <target name="-drush-clear-apc">
+        <exec executable="drush" resolveexecutable="true">
+            <arg line="@${ant.project.name}.${environment} ssh &quot;drush php-eval 'if(function_exists(apc_clear_cache)) apc_clear_cache();'&quot;" />
+        </exec>
+        <echo>APC cache has been emptied</echo>
+    </target>
 
   <!-- private target, check if vcl is present -->
   <target name="-vcl.check">
