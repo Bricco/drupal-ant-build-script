@@ -65,7 +65,7 @@
 
     <!-- sync the database -->
     <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-      <arg line="-y sql-sync @{ant.project.name}.PROD @{ant.project.name}.TEST --no-ordered-dump --no-cache" />
+      <arg line="-y sql-sync @${ant.project.name}.PROD @${ant.project.name}.TEST --no-ordered-dump --no-cache" />
     </exec>
 
     <!-- clear cache on TEST -->
@@ -106,7 +106,7 @@
 
     <!-- generate drush aliases file -->
     <echo file="${drush-aliases-file}">&lt;?php 
-      $notdump = array(
+      $skip_on_update = array(
         'cache',
         'cache_filter',
         'cache_menu',
@@ -185,7 +185,7 @@
       $aliases['${append.env}']['ssh-options'] = '-o PasswordAuthentication=yes';
       $aliases['${append.env}']['command-specific'] = array(
               'rsync' => array('exclude-files' => TRUE),
-              'sql-sync' => array('no-cache' => TRUE, 'skip-tables-key' => 'custom', 'skip-tables' => array('custom' => $notdump)),
+              'sql-sync' => array('enable' => array('devel'), 'no-cache' => TRUE, 'skip-tables-key' => 'custom', 'skip-tables' => array('custom' => $skip_on_update)),
       );
         </echo>
     <antcall target="-drush-aliases-append-remote" />
@@ -360,7 +360,7 @@
   <target name="-local-update-database" depends="-drush-setup">
     <!-- sync the database -->
     <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-      <arg line="-y sql-sync @${ant.project.name}.PROD @${ant.project.name}.${environment} --no-ordered-dump" />
+      <arg line="-y sql-sync @${ant.project.name}.PROD @${ant.project.name}.${environment} --sanitize --confirm-sanitizations --sanitize-password='secret' --no-ordered-dump" />
     </exec>
   </target>
 
