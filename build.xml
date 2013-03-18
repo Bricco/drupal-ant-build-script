@@ -60,12 +60,12 @@
   <target name="test-content-update" depends="-drush-setup" description="Updates the TEST environment from the content from the PROD environment">
     <!-- sync the files dir -->
     <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-      <arg line="-y rsync @PROD:sites/default/files/ @TEST:sites/default/files/" />
+      <arg line="-y rsync @{ant.project.name}.PROD:sites/default/files/ @{ant.project.name}.TEST:sites/default/files/" />
     </exec>
 
     <!-- sync the database -->
     <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-      <arg line="-y sql-sync @PROD @TEST --no-ordered-dump --no-cache" />
+      <arg line="-y sql-sync @{ant.project.name}.PROD @{ant.project.name}.TEST --no-ordered-dump --no-cache" />
     </exec>
 
     <!-- clear cache on TEST -->
@@ -74,6 +74,30 @@
     </exec>
   </target>
 
+
+  <!-- public target reset admin user -->
+  <target name="local-reset-admin-login" description="reset user 1 login">
+
+    <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+      <arg line="-r ${deploy.dir} sqlq &quot;UPDATE {users} SET name='admin' WHERE uid=1&quot; --db-prefix" />
+    </exec>
+
+    <input message="Please enter new admin password:" addproperty="admin.pass" />
+
+    <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+      <arg line="@${ant.project.name}.${environment} upwd admin --password='${admin.pass}'" />
+    </exec>
+
+  </target>
+
+  <target name="local-copy-settings" description="copy all settings.php files">
+    <echo> copy and filter all *settings.php files</echo>
+    <copy todir="${deploy.dir}" filtering="true">
+      <fileset dir="${basedir}">
+        <include name="**/*settings.php" />
+      </fileset>
+    </copy>
+  </target>
 
   <!-- private target, sets up drush env -->
   <target name="-drush-setup">
@@ -117,7 +141,7 @@
     <antcall target="-drush-aliases-append-PROD" />
     <echo file="${drush-aliases-file}" append="true">?&gt;</echo>
 
-    <!-- delete tmp dir just in case -->   
+    <!-- delete tmp dir just in case -->
     <delete dir="tmp/" failonerror="false" />
   </target>
 
@@ -183,7 +207,7 @@
       $aliases['${append.env}']['path-aliases']['%drush-script'] = '${path-aliases.drush-script}';
     </echo>
   </target>
-  
+
   <!-- private target, run drush make based on the make file -->
   <target name="-drush-make">
     <exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
@@ -222,7 +246,7 @@
 
     <copy file="htaccess.htaccess" tofile="tmp/.htaccess" filtering="false" overwrite="true" failonerror="false" />
     <copy file="robots.txt" tofile="tmp/robots.txt" filtering="false" overwrite="true" failonerror="false" />
-  	
+
     <chmod perm="u+w">
       <fileset dir="tmp">
         <include name="**/settings.php" />
@@ -276,14 +300,14 @@
   <target name="-cleanup">
     <delete dir="tmp" />
   </target>
-	
-   <!-- private target, clear apc cache -->
-    <target name="-drush-clear-apc">
-        <exec executable="drush" resolveexecutable="true">
-            <arg line="@${ant.project.name}.${environment} ssh &quot;drush php-eval 'if(function_exists(apc_clear_cache)) apc_clear_cache();'&quot;" />
-        </exec>
-        <echo>APC cache has been emptied</echo>
-    </target>
+
+  <!-- private target, clear apc cache -->
+  <target name="-drush-clear-apc">
+    <exec executable="drush" resolveexecutable="true">
+      <arg line="@${ant.project.name}.${environment} ssh &quot;drush php-eval 'if(function_exists(apc_clear_cache)) apc_clear_cache();'&quot;" />
+    </exec>
+    <echo>APC cache has been emptied</echo>
+  </target>
 
   <!-- private target, check if vcl is present -->
   <target name="-vcl.check">
