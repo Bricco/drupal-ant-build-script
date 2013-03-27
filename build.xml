@@ -57,22 +57,34 @@
   <target name="local-update-content" depends="-local-update-database,-local-update-files" description="Update the local content with PROD data" />
 
   <!-- public target to update test content from PROD -->
-  <target name="test-content-update" depends="-drush-setup" description="Updates the TEST environment from the content from the PROD environment">
-    <!-- sync the files dir -->
-    <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-      <arg line="-y rsync @{ant.project.name}.PROD:sites/default/files/ @{ant.project.name}.TEST:sites/default/files/" />
-    </exec>
+    <target name="test-content-update" depends="-drush-setup" description="Updates the TEST environment from the content from the PROD environment">
+     
+      <mkdir dir="drush" />
+      
+      <copy file="${user.home}/.drush/${ant.project.name}.aliases.drushrc.php" todir="drush" overwrite="true" />
+      
+      <!-- rsync the aliases -->
+       <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+             <arg line="rsync -v drush @{ant.project.name}.TEST:sites/all/drush'" />
+       </exec>
+      
+      <!-- rsync the files -->
+      <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+            <arg line="-v @{ant.project.name}.TEST ssh 'drush -s -v rsync @{ant.project.name}.PROD:sites/default/files/ @{ant.project.name}.TEST:sites/default/files/'" />
+      </exec>
 
-    <!-- sync the database -->
-    <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-      <arg line="-y sql-sync @${ant.project.name}.PROD @${ant.project.name}.TEST --no-ordered-dump --no-cache" />
-    </exec>
+      <!-- sync the database -->
+      <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+        <arg line="-y -s sql-sync @${ant.project.name}.PROD @${ant.project.name}.TEST --no-ordered-dump --no-cache" />
+      </exec>
 
-    <!-- clear cache on TEST -->
-    <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-      <arg line="@${ant.project.name}.TEST cc all" />
-    </exec>
-  </target>
+      <!-- clear cache on TEST -->
+      <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+        <arg line="@${ant.project.name}.TEST cc all" />
+      </exec>
+      
+      <delete dir="drush/" failonerror="false" />
+    </target>
 
 
   <!-- public target reset admin user -->
