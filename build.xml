@@ -68,24 +68,21 @@
              <arg line="-y rsync ${basedir}/tmp/drush/ @${ant.project.name}.TEST:sites/all/drush" />
        </exec>
       
-
       <property file="environment.TEST.properties" />
       
       <!-- rsync the files -->
       <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-            <arg line="-v @${ant.project.name}.TEST ssh 'drush -s -v -y -r ${drupal.root} rsync @${ant.project.name}.PROD:sites/default/files/ ${drupal.root}/sites/default/files/'" />
-            <!--arg line="-v @${ant.project.name}.TEST ssh 'drush -s -r ${drupal.root} -v sa @${ant.project.name}.PROD'" /-->
-              
+            <arg line="@${ant.project.name}.TEST ssh 'drush -y -r ${drupal.root} rsync @${ant.project.name}.PROD:sites/default/files/ ${drupal.root}/sites/default/files/'" />              
       </exec>
 
       <!-- sync the database -->
       <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-        <arg line="-y -s sql-sync @${ant.project.name}.PROD @${ant.project.name}.TEST --no-ordered-dump --no-cache" />
+        <arg line="-y sql-sync @${ant.project.name}.PROD @${ant.project.name}.TEST --no-ordered-dump --no-cache" />
       </exec>
 
       <!-- clear cache on TEST -->
       <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-        <arg line="-s @${ant.project.name}.TEST cc all" />
+        <arg line="@${ant.project.name}.TEST cc all" />
       </exec>
       
       <delete dir="tmp/" failonerror="false" />
