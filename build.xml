@@ -68,10 +68,13 @@
              <arg line="-y rsync ${basedir}/tmp/drush/ @${ant.project.name}.TEST:sites/all/drush" />
        </exec>
       
+
+      <property file="environment.TEST.properties" />
+      
       <!-- rsync the files -->
       <exec executable="drush" resolveexecutable="true" dir="${basedir}">
             <!--arg line="-v @${ant.project.name}.TEST ssh 'drush -s -v -y rsync @${ant.project.name}.PROD:sites/default/files/ @${ant.project.name}.TEST:sites/default/files/'" /-->
-            <arg line="-v @${ant.project.name}.TEST ssh 'drush -s -v sa @${ant.project.name}.PROD; drush sa @${ant.project.name}.TEST'" />
+            <arg line="-v @${ant.project.name}.TEST ssh 'drush -s -r ${drupal.root} -v sa @${ant.project.name}.PROD'" />
               
       </exec>
 
