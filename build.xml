@@ -58,14 +58,14 @@
 
   <!-- public target to update test content from PROD -->
     <target name="test-content-update" depends="-drush-setup" description="Updates the TEST environment from the content from the PROD environment">
-     
-      <mkdir dir="drush" />
-      
-      <copy file="${user.home}/.drush/${ant.project.name}.aliases.drushrc.php" todir="drush" overwrite="true" />
+ 
+      <mkdir dir="tmp/drush" />
+  
+      <copy file="${user.home}/.drush/${ant.project.name}.aliases.drushrc.php" todir="tmp/drush" overwrite="true" />
       
       <!-- rsync the aliases -->
        <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-             <arg line="rsync -v drush @{ant.project.name}.TEST:sites/all/drush" />
+             <arg line="rsync -v  ${basedir}/tmp/drush @{ant.project.name}.TEST:sites/all/drush" />
        </exec>
       
       <!-- rsync the files -->
@@ -83,7 +83,7 @@
         <arg line="@${ant.project.name}.TEST cc all" />
       </exec>
       
-      <delete dir="drush/" failonerror="false" />
+      <delete dir="tmp/" failonerror="false" />
     </target>
 
 
