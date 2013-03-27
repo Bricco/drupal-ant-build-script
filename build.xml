@@ -65,7 +65,7 @@
       
       <!-- rsync the aliases -->
        <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-             <arg line="rsync -v drush @{ant.project.name}.TEST:sites/all/drush'" />
+             <arg line="rsync -v drush @{ant.project.name}.TEST:sites/all/drush" />
        </exec>
       
       <!-- rsync the files -->
