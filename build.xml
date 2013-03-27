@@ -73,8 +73,8 @@
       
       <!-- rsync the files -->
       <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-            <!--arg line="-v @${ant.project.name}.TEST ssh 'drush -s -v -y rsync @${ant.project.name}.PROD:sites/default/files/ @${ant.project.name}.TEST:sites/default/files/'" /-->
-            <arg line="-v @${ant.project.name}.TEST ssh 'drush -s -r ${drupal.root} -v sa @${ant.project.name}.PROD'" />
+            <arg line="-v @${ant.project.name}.TEST ssh 'drush -s -v -y -r ${drupal.root} rsync @${ant.project.name}.PROD:sites/default/files/ ${drupal.root}/sites/default/files/'" />
+            <!--arg line="-v @${ant.project.name}.TEST ssh 'drush -s -r ${drupal.root} -v sa @${ant.project.name}.PROD'" /-->
               
       </exec>
 
