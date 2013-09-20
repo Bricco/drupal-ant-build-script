@@ -277,11 +277,11 @@
     </exec>
 
     <!-- Enable features module -->
-    <exec executable="drush" resolveexecutable="true" dir="tmp" failonerror="true">
+    <exec executable="drush" resolveexecutable="true" dir="tmp" failonerror="false">
       <arg line="-y @${ant.project.name}.${environment} en features" />
     </exec>
     <!-- Revert all features -->
-    <exec executable="drush" resolveexecutable="true" dir="tmp" failonerror="true">
+    <exec executable="drush" resolveexecutable="true" dir="tmp" failonerror="false">
       <arg line="-y @${ant.project.name}.${environment} fra" />
     </exec>
 
