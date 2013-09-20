@@ -198,7 +198,7 @@
       $aliases['${append.env}']['databases']['default']['default']['password'] = '${db.password}';
       $aliases['${append.env}']['ssh-options'] = '-o PasswordAuthentication=yes';
       $aliases['${append.env}']['command-specific'] = array(
-              'rsync' => array('exclude-files' => TRUE),
+              'rsync' => array('exclude-files' => TRUE,'mode' => 'rlptz'),
               'sql-sync' => array('enable' => array('devel'), 'no-cache' => TRUE, 'skip-tables-key' => 'custom', 'skip-tables' => array('custom' => $skip_on_update)),
       );
         </echo>
