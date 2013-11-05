@@ -45,7 +45,7 @@
 
 
   <!-- public target called from Bamboo deploy jobs -->
-  <target name="deploy-all" depends="-drush-setup,-drush-make,-copy-php,-drush-run-rsync-with-delete,-drush-clear-apc,-drush-runs,-drush-run-cc,-varnish-reload,-cleanup" description="Full install of Drupal based on the make file" />
+  <target name="deploy-all" depends="-drush-setup,-drush-make,-copy-php,-drush-run-rsync-with-delete,-drush-clear-apc,-drush-runs,-drush-run-cc,-varnish-reload,-files-as-www-data,-cleanup" description="Full install of Drupal based on the make file" />
 
   <!-- public target called from Bamboo automatic jobs -->
   <target name="deploy-auto" depends="-drush-setup,-copy-php,-drush-run-rsync-no-delete,-drush-run-cc,-cleanup" description="Copies PHP to the Drupal installation" />
@@ -375,6 +375,15 @@
     <!-- sync the database -->
     <exec executable="drush" resolveexecutable="true" dir="${basedir}">
       <arg line="-y sql-sync @${ant.project.name}.PROD @${ant.project.name}.${environment} --sanitize --confirm-sanitizations --sanitize-password='secret' --no-ordered-dump" />
+    </exec>
+  </target>
+
+  <target name="-files-as-www-data">
+    <exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="false">
+      <arg line="@${ant.project.name}.${environment} ssh 'chgrp -R www-data ${drupal.root}/sites/default/files/'" />              
+    </exec>
+    <exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="false">
+      <arg line="@${ant.project.name}.${environment} ssh 'chown -R www-data ${drupal.root}/sites/default/files/'" />              
     </exec>
   </target>
 
