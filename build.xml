@@ -299,7 +299,7 @@
   <target name="-drush-run-rsync-with-delete">
     <!-- Rsync the project - remove old files -->
     <exec executable="drush" resolveexecutable="true" failonerror="true">
-      <arg line="-y rsync ${basedir}/tmp/ @${ant.project.name}.${environment} --delete" />
+      <arg line="-y rsync ${basedir}/tmp/ @${ant.project.name}.${environment} --delete --RSYNC-FLAG='--omit-dir-times'" />
     </exec>
   </target>
 
