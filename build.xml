@@ -379,11 +379,9 @@
   </target>
 
   <target name="-files-as-www-data">
+    <property file="environment.${environment}.properties" />
     <exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="false">
-      <arg line="@${ant.project.name}.${environment} ssh 'chgrp -R www-data ${drupal.root}/sites/default/files/'" />              
-    </exec>
-    <exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="false">
-      <arg line="@${ant.project.name}.${environment} ssh 'chown -R www-data ${drupal.root}/sites/default/files/'" />              
+      <arg line="@${ant.project.name}.${environment} ssh 'chown -R www-data:www-data ${drupal.root}/sites/default/files/'" />              
     </exec>
   </target>
 
