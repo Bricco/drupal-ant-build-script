@@ -6,17 +6,18 @@
     Ant must be at least version 1.8
   </fail>
 
+  <!-- We're using both version 5 and 6, that's why this code is uncommented.
   <!-- check drush version -->
-  <exec executable="drush" failonerror="true" outputproperty="drushversionstring">
+  <!--exec executable="drush" failonerror="true" outputproperty="drushversionstring">
     <arg line="--version" />
-  </exec>
+  </exec-->
   <!-- drushversionstring should look like this: "drush version 5.7" -->
-  <condition property="drushversion">
+  <!--condition property="drushversion">
     <contains string="${drushversionstring}" substring=" 5." />
   </condition>
   <fail unless="drushversion">
     Drush must be version 5.x
-  </fail>
+  </fail-->
 
   <fail unless="environment">
     You have to set the environment property. I e
