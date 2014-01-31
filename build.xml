@@ -6,7 +6,7 @@
     Ant must be at least version 1.8
   </fail>
 
-  <!-- We're using both version 5 and 6, that's why this code is uncommented.
+  <!-- We're using both version 5 and 6, that's why this code is uncommented. -->
   <!-- check drush version -->
   <!--exec executable="drush" failonerror="true" outputproperty="drushversionstring">
     <arg line="--version" />
