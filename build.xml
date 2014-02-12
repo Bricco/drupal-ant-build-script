@@ -362,7 +362,7 @@
   <target name="-local-update-database" depends="-drush-setup">
     <!-- sync the database -->
     <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-      <arg line="-y sql-sync @${ant.project.name}.PROD @${ant.project.name}.${environment} --sanitize --confirm-sanitizations --sanitize-password='secret' --no-ordered-dump" />
+      <arg line="-y sql-sync @${ant.project.name}.PROD @${ant.project.name}.${environment} --no-ordered-dump" />
     </exec>
   </target>
 
