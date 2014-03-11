@@ -41,8 +41,11 @@
   <!-- public target to install locally -->
   <target name="local-install" depends="-drush-setup,-local-pre-make,-drush-make,-copy-php,-drush-run-rsync-with-delete,-local-post-make,-drush-runs,-drush-run-cc,-cleanup" description="Full local install of Drupal based on the make file" />
 
-  <!-- public target to update content locally -->
+  <!-- public target to update content locally from prod -->
   <target name="local-update-content" depends="-local-update-database,-local-update-files" description="Update the local content with PROD data" />
+
+  <!-- public target to update content locally from test -->
+  <target name="local-update-content-from-test" depends="-local-update-database-from-test,-local-update-files-from-test" description="Update the local content with TEST data" />
 
   <!-- public target to update test content from PROD -->
     <target name="test-content-update" depends="-drush-setup" description="Updates the TEST environment from the content from the PROD environment">
@@ -358,11 +361,27 @@
     </exec>
   </target>
 
+  <!-- private target, update the local files from TEST -->
+  <target name="-local-update-files-from-test" depends="-drush-setup">
+    <!-- sync the files dir -->
+    <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+      <arg line="-y rsync @${ant.project.name}.TEST:sites/default/files/ ${deploy.dir}/sites/default/files/" />
+    </exec>
+  </target>
+
   <!-- private target, update the local database from PROD -->
   <target name="-local-update-database" depends="-drush-setup">
     <!-- sync the database -->
     <exec executable="drush" resolveexecutable="true" dir="${basedir}">
       <arg line="-y sql-sync @${ant.project.name}.PROD @${ant.project.name}.${environment} --no-ordered-dump" />
+    </exec>
+  </target>
+
+  <!-- private target, update the local database from TEST -->
+  <target name="-local-update-database-from-test" depends="-drush-setup">
+    <!-- sync the database -->
+    <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+      <arg line="-y sql-sync @${ant.project.name}.TEST @${ant.project.name}.${environment} --no-ordered-dump" />
     </exec>
   </target>
 
