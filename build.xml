@@ -41,6 +41,9 @@
   <!-- public target to install locally -->
   <target name="local-install" depends="-drush-setup,-local-pre-make,-drush-make,-copy-php,-drush-run-rsync-with-delete,-local-post-make,-drush-runs,-drush-run-cc,-cleanup" description="Full local install of Drupal based on the make file" />
 
+  <!-- public target to install locally -->
+  <target name="local-init" depends="-drush-setup,-local-pre-make,-drush-make,-copy-php,-drush-run-rsync-with-delete,-local-post-make,-drush-create-db,-cleanup" description="Full local install of Drupal based on the make file" />
+
   <!-- public target to update content locally -->
   <target name="local-update-content" depends="-local-update-database,-local-update-files" description="Update the local content with PROD data" />
 
@@ -296,6 +299,22 @@
     <exec executable="drush" resolveexecutable="true" dir="tmp">
       <arg line="@${ant.project.name}.${environment} cc all" />
     </exec>
+  </target>
+
+  <!-- private target, runs drush cache clear -->
+  <target name="-drush-create-db">
+  
+    <property file="environment.DEV.properties"/>
+    <exec executable="mysql" resolveexecutable="true">
+      <arg line="-u root -e &quot;DROP DATABASE IF EXISTS ${db.database}&quot;" />
+    </exec>
+    <exec executable="mysql" resolveexecutable="true">
+      <arg line="-u root -e &quot;CREATE DATABASE ${db.database} CHARACTER SET utf8 COLLATE utf8_swedish_ci&quot;" />
+    </exec>
+    <exec executable="mysql" resolveexecutable="true">
+      <arg line="-u root -e &quot;grant all on ${db.database}.* to '${db.username}'@'localhost' identified by '${db.password}'&quot;" />
+    </exec>
+    <echo>Database ${db.database} created. Go to http://dev.${ant.project.name}.se/install to finalize the installation.</echo>
   </target>
 
   <!-- private target, cleans up after deploy -->
