@@ -216,7 +216,7 @@
   <!-- private target, run drush make based on the make file -->
   <target name="-drush-make">
     <exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
-      <arg line="make ${ant.project.name}.make tmp" />
+      <arg line="make ${ant.project.name}.make --translations=sv tmp" />
     </exec>
   </target>
 
