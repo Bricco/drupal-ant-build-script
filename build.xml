@@ -357,7 +357,7 @@
 
     <!-- clear varnish cache without restarting varnish -->
     <exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
-      <arg line="@${ant.project.name}.${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 ban req.url ~ /'" />
+      <arg line="@${ant.project.name}.${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 ban.url .'" />
     </exec>
 
   </target>
