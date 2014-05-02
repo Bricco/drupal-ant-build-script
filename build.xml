@@ -185,7 +185,6 @@
       $aliases['${append.env}'] = array ();
       $aliases['${append.env}']['uri'] = '${drupal.uri}';
       $aliases['${append.env}']['root'] = '${drupal.root}';
-      $aliases['${append.env}']['dump-dir'] = '/var/tmp';
       $aliases['${append.env}']['databases'] = array('default' => array('default' => array('host' => '${db.host}', 'driver' => 'mysql', 'prefix' => '', 'port' => '' )));
       $aliases['${append.env}']['databases']['default']['default']['database'] = '${db.database}';
       $aliases['${append.env}']['databases']['default']['default']['username'] = '${db.username}';
