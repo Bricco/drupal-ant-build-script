@@ -253,6 +253,7 @@
 
     <copy file="htaccess.htaccess" tofile="tmp/.htaccess" filtering="false" overwrite="true" failonerror="false" />
     <copy file="robots.txt" tofile="tmp/robots.txt" filtering="false" overwrite="true" failonerror="false" />
+    <copy file="favicon.ico" tofile="tmp/favicon.ico" filtering="false" overwrite="true" failonerror="false" />
 
     <chmod perm="u+w">
       <fileset dir="tmp">
@@ -398,6 +399,12 @@
     <exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
       <arg line="@${ant.project.name}.${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 vcl.use ${vclconfigname}'" />
     </exec>
+
+    <!-- clear varnish cache without restarting varnish -->
+    <exec executable="drush" resolveexecutable="true" dir="${basedir}" failonerror="true">
+      <arg line="@${ant.project.name}.${environment} ssh 'varnishadm -S /etc/varnish/secret -T localhost:6082 ban.url .'" />
+    </exec>
+
   </target>
 
   <!-- private target -->
