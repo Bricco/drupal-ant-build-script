@@ -446,6 +446,13 @@
     <exec executable="drush" resolveexecutable="true" dir="${basedir}">
       <arg line="-y sql-sync @${ant.project.name}.PROD @${ant.project.name}.${environment} --no-ordered-dump" />
     </exec>
+
+    <!-- replace domain property of the Drupal language to use the correct ("dev.") subdomain -->
+    <property file="environment.DEV.properties" prefix="DEV."/>
+    <property file="environment.PROD.properties" prefix="PROD."/>
+    <exec executable="mysql" resolveexecutable="true">
+      <arg line="-u ${DEV.db.username} -p${DEV.db.password} -h ${DEV.db.host} ${DEV.db.database} -e &quot;update languages set domain = replace(domain, left('${PROD.drupal.uri}', locate('.','${PROD.drupal.uri}')), left('${DEV.drupal.uri}', locate('.','${DEV.drupal.uri}'))) where domain != ''&quot;" />
+    </exec>
   </target>
 
   <!-- private target, update the local database from TEST -->
@@ -453,6 +460,13 @@
     <!-- sync the database -->
     <exec executable="drush" resolveexecutable="true" dir="${basedir}">
       <arg line="-y sql-sync @${ant.project.name}.TEST @${ant.project.name}.${environment} --no-ordered-dump" />
+    </exec>
+    
+    <!-- replace domain property of the Drupal language to use the correct ("dev.") subdomain -->
+    <property file="environment.DEV.properties" prefix="DEV."/>
+    <property file="environment.TEST.properties" prefix="TEST."/>
+    <exec executable="mysql" resolveexecutable="true">
+      <arg line="-u ${DEV.db.username} -p${DEV.db.password} -h ${DEV.db.host} ${DEV.db.database} -e &quot;update languages set domain = replace(domain, left('${TEST.drupal.uri}', locate('.','${TEST.drupal.uri}')), left('${DEV.drupal.uri}', locate('.','${DEV.drupal.uri}'))) where domain != ''&quot;" />
     </exec>
   </target>
 
