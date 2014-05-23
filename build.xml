@@ -48,7 +48,13 @@
   <target name="local-update-content" depends="-local-update-database,-local-update-files" description="Update the local content with PROD data" />
 
   <!-- public target to update content locally from test -->
-  <target name="local-update-content-from-test" depends="-local-update-database-from-test,-local-update-files-from-test" description="Update the local content with TEST data" />
+  <target name="local-update-content-from-test" depends="-local-update-database-from-test,-local-update-files-from-test" description="Update the local content with TEST data">
+    <!-- clear cache -->
+    <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+      <arg line="@${ant.project.name}.DEV cc all" />
+    </exec>
+  </target>
+
 
   <!-- public target to update test content from PROD -->
     <target name="test-content-update" depends="-drush-setup" description="Updates the TEST environment from the content from the PROD environment">
