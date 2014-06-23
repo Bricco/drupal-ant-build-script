@@ -94,10 +94,13 @@
 
       <!-- sync the database -->
       <exec executable="drush" resolveexecutable="true" dir="${basedir}">
-        <arg line="-y sql-sync @${ant.project.name}.PROD @${ant.project.name}.TEST --no-ordered-dump --no-cache" />
+        <arg line="-y sql-sync @${ant.project.name}.PROD @${ant.project.name}.TEST --no-ordered-dump" />
       </exec>
       
       <!-- Download and enable -->
+      <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+        <arg line="@${ant.project.name}.TEST dl stage_file_proxy" />
+      </exec>
       <exec executable="drush" resolveexecutable="true" dir="${basedir}">
         <arg line="@${ant.project.name}.TEST en stage_file_proxy -y" />
       </exec>
