@@ -88,6 +88,26 @@
       <delete dir="tmp/" failonerror="false" />
     </target>
 
+     <!-- public target to update test content from PROD -->
+    <target name="test-content-update-no-files" depends="-drush-setup" description="Updates the TEST environment from the content from the PROD environment">
+ 
+
+      <!-- sync the database -->
+      <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+        <arg line="-y sql-sync @${ant.project.name}.PROD @${ant.project.name}.TEST --no-ordered-dump --no-cache" />
+      </exec>
+      
+      <!-- Download and enable -->
+      <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+        <arg line="@${ant.project.name}.TEST en stage_file_proxy -y" />
+      </exec>
+
+      <!-- clear cache on TEST -->
+      <exec executable="drush" resolveexecutable="true" dir="${basedir}">
+        <arg line="@${ant.project.name}.TEST cc all" />
+      </exec>
+      
+    </target>
 
   <!-- public target reset admin user -->
   <target name="local-reset-admin-login" description="reset user 1 login">
